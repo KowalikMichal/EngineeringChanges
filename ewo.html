@@ -15,6 +15,7 @@
 	
 	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/EWO_FirstData.js"></script>
 	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/AddItems.js"></script>
+	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/appendSummaryData.js"></script>
 
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/Style/style.css">
@@ -143,8 +144,7 @@
 				<div class="col-sm-3">
 					<div class="form-group padInfo">
 						<label for="usr">ME Planner:</label>
-						<div id="peoplePickerMePlaner">
-							<!--<input class="form-control generalInfoOfEWO planner" type="text">-->	
+						<div id="peoplePickerMePlaner">	
 						</div>
 					</div>
 				</div>
@@ -152,7 +152,6 @@
 					<div class="form-group padInfo">
 						<label for="usr">MPD Processor:</label>
 						<div id="peoplePickerMPDProcessor">
-							<!--<input class="form-control generalInfoOfEWO processor" type="text">	-->
 						</div>
 					</div>
 				</div>
@@ -160,7 +159,6 @@
 					<div class="form-group padInfo">
 						<label for="usr">ME GL:</label>
 						<div id="peoplePickerMeGL">
-							<!--<input class="form-control generalInfoOfEWO GL" type="text">-->
 						</div>
 					</div>
 				</div>
@@ -212,7 +210,6 @@
 					<div class="form-group">
 						<label for="usr">Planners:</label> 
 						<div id="peoplePickermailReceivers">
-							<!--<input class="form-control my-basic-input mailReceivers" type="text">-->
 						</div>
 					</div>
 				</div>
@@ -220,15 +217,20 @@
 					<div class="form-group">
 						<label for="usr">Processors:</label>
 						<div id="peoplePickermailMailCopy">
-							<!--<input class="form-control my-basic-input " type="text">-->
 						</div>
 					</div>
 				</div>
 				<div class="col-sm-12">
 					<div class="form-group">
-						<label for="usr">Platform coordinators (also on CC) :</label>
+						<label for="usr">Platform coordinators (also on CC):</label>
 						<div id="peoplePickermailPlatformCoordinators">
-							<!--<input class="form-control my-basic-input platformCoordinators" type="text">-->
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-12">
+					<div class="form-group" hidden="hidden">
+						<label for="usr">VAA coordinators</label>
+						<div id="peoplePickermailVAACoordinators">
 						</div>
 					</div>
 				</div>

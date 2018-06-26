@@ -9,12 +9,12 @@
 
 	var plannersAndGL={planner:[],gl:[]};
 
-	var deferred = new $.Deferred();
-	var counter = null;
+var deferred = new $.Deferred();
+var counter = null;
 
 $(function(){
 	SP.SOD.executeFunc('sp.js', 'SP.ClientContext',function(){
-		var InitializePeoplePicker = {'peoplePickerDRE' : 'generalInfoOfEWO', 'peoplePickerMePlaner' : 'planner', 'peoplePickerMPDProcessor': 'processor', 'peoplePickerMeGL': 'GL', 'peoplePickermailReceivers': 'mailReceivers', 'peoplePickermailMailCopy': 'mailCopy', 'peoplePickermailPlatformCoordinators': 'platformCoordinators'};
+		var InitializePeoplePicker = {'peoplePickerDRE' : 'generalInfoOfEWO', 'peoplePickerMePlaner' : 'planner', 'peoplePickerMPDProcessor': 'processor', 'peoplePickerMeGL': 'GL', 'peoplePickermailReceivers': 'mailReceivers', 'peoplePickermailMailCopy': 'mailCopy', 'peoplePickermailPlatformCoordinators': 'platformCoordinators', 'peoplePickermailVAACoordinators': 'VAACoordinators'};
 
 		$.when($.each(InitializePeoplePicker, function(key, ClassName){
 			if (key == 'peoplePickerDRE') initializePeoplePicker(key, false, ClassName)
@@ -36,45 +36,23 @@ function initializePeoplePicker(peoplePickerElementId, AllowMultipleValues, cust
 	schema['Width'] = '100%';
 
 	this.SPClientPeoplePicker_InitStandaloneControlWrapper(peoplePickerElementId, null, schema);
+	//delete the same user
+	this.SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerElementId + '_TopSpan'].OnUserResolvedClientScript = function (peoplePickerId, selectedUsersInfo) {
+		var users = selectedUsersInfo;
+		for(var i = 0; i < users.length - 1; i++) if(users[users.length - 1].Key == users[i].Key) this.DeleteProcessedUser();
+	};
+
 	$('#'+peoplePickerElementId+'_TopSpan').addClass(customClass);
 	$('#'+peoplePickerElementId+'_TopSpan').addClass('form-control');
 }
+
 /*
-function getUserInfo() {
-	var peoplePicker = this.SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerDiv_TopSpan;
-
-	var users = peoplePicker.GetAllUserInfo();
-	var userInfo = '';
-	for (var i = 0; i < users.length; i++) {
-		var user = users[i];
-		for (var userProperty in user) { 
-			userInfo += userProperty + ':  ' + user[userProperty] + '<br>';
-		}
-	}
-	var keys = peoplePicker.GetAllUserKeys();
-	getUserId(users[0].Key);
-}
-
-// Get the user ID.
-function getUserId(loginName) {
-	var context = new SP.ClientContext.get_current();
-	this.user = context.get_web().ensureUser(loginName);
-	context.load(this.user);
-	context.executeQueryAsync(
-		 Function.createDelegate(null, ensureUserSuccess), 
-		 Function.createDelegate(null, onFail)
-	);
+//for every peoplepicker on the page 
+for(var key in SPClientPeoplePicker.SPClientPeoplePickerDict){ 
+	console.log(key);
 }
 */
-function ensureUserSuccess() {
-	console.log(this.user.get_email());
-}
 
-function onFail(sender, args) {
-	alert('Query failed. Error: ' + args.get_message());
-}
-
-	
 function readyFunction(){
 	$('#numberEWO').focusout(function(){
 		checkEWO('EWO%20List', $('#numberEWO').val());
@@ -101,7 +79,7 @@ function readyFunction(){
 	}); 
 	
 	$('body').on('click', '#doSummary', function(){
-		createSummary();
+		secondValidation();
 	}); 
 
 
@@ -142,7 +120,7 @@ function readyFunction(){
 		findEngineersFromPAD(this.value , $(this).parents(".row").find(".workbook").val());
 	});
 }
-
+/*
 var substringMatcher = function(strs) {
   return function findMatches(q, cb) {
 	var matches, substringRegex;
@@ -163,7 +141,7 @@ var substringMatcher = function(strs) {
 	cb(matches);
   };
 };
-
+*/
 function validateNumberLength(selectorID){
 	$( "#validationMessage" ).append( "<p clas='errorInfo'>Number EWO has to have 7 (or 10) digits.</p>" );
 	isWrong(selectorID);
@@ -178,16 +156,16 @@ function validateNumber(){
 	$(".alert-danger").hide();
 	var selectorID="#numberEWO";
 	
-	setTrimValue(selectorID);
+	//setTrimValue(selectorID);
 	removerErrorClass(selectorID);
 	
 	if($(selectorID).val().indexOf("(")==-1){
 		if(!isNaN($(selectorID).val())){
 			if($(selectorID).val().length!=7){
 				validateNumberLength(selectorID);
-			}else{
+			}/*else{
 				setTrimValue(selectorID);
-			}
+			}*/
 		}else{
 			$("#validationMessage").append("<p clas='errorInfo'>Number EWO has to be number.</p>");
 			isWrong(selectorID);
@@ -196,9 +174,9 @@ function validateNumber(){
 		if($(selectorID).val().length!=10){
 			validateNumberLength(selectorID);
 		}
-		else{
+		/*else{
 			setTrimValue(selectorID);
-		}
+		}*/
  }
 	selectorID="#titleEWO";
 	validateTitle(selectorID);	
@@ -209,9 +187,9 @@ function validateTitle(selectorID){
 	if(!isNaN($(selectorID).val()) ||$(selectorID).val()==""){
 		$("#validationMessage" ).append( "<p clas='errorInfo'>Title shouldn't be only numbers and/or empty </p>");
 		isWrong(selectorID);
-	}else{
+	}/*else{
 		setTrimValue(selectorID);	
-	}
+	}*/
 	selectorID = "#peoplePickerDRE_TopSpan_HiddenInput";
 	validateDRE(selectorID);
 }
@@ -224,7 +202,7 @@ function validateDRE(selectorID){
 	}
 	else {
 		var nameDRE = $.parseJSON($('#peoplePickerDRE_TopSpan_HiddenInput').val());
-			if(nameDRE[0].hasOwnProperty('Description')) checkOveralValidation();
+		if(nameDRE[0].hasOwnProperty('Description')) checkOveralValidation();
 	}	
 }
 
@@ -234,18 +212,16 @@ function isWrong(ID){
 
 function removerErrorClass(ID){
 	var checkError = $(ID).parent().hasClass("has-error") ? true: false;
-	if(checkError){
-		$(ID).parent().removeClass('has-error');
-	}
+	if(checkError) $(ID).parent().removeClass('has-error');
 }
-
+/*
 function setTrimValue(ID){
 	if(/^\s/.test($(ID).val())|| /\s$/.test($(ID).val())){
 		var correctValue =$.trim( $(ID).val());
 		$(ID).val(correctValue);
 	}
 }
-
+*/
 function isEmpty(str){
 	return !str.replace(/^\s+/g, '').length; 
 }
@@ -269,10 +245,10 @@ function checkErrorClass(ID){
 }
 
 function hidePadData(){
-	if ( $(".PAD-analysis").css('display') == "none" ){
-	// element is hidden do nothing
+	if ($(".PAD-analysis").css('display') == "none"){
+		// element is hidden do nothing
 	}else{
-	$(".PAD-analysis").hide();
+		$(".PAD-analysis").hide();
 	}
 }
 
@@ -318,47 +294,42 @@ function clonePadSection(counter){
 
 function checkPlatform(book){
 	var infoPlatformMY={};
-	switch(book)
-	{
+	switch(book){
 		case "P3/P7":
-		infoPlatformMY.platform="GAMMA P3/P7";
-		infoPlatformMY.MY="2018";
-		break;
-		
+			infoPlatformMY.platform="GAMMA P3/P7";
+			infoPlatformMY.MY="2018";
+			break;
 		case "Z":
-		infoPlatformMY.platform="EPSILON";
-		infoPlatformMY.MY="2020";
-		break;
-
-		case "J":
+			infoPlatformMY.platform="EPSILON";
+			infoPlatformMY.MY="2020";
+			break;
+		/*case "J":
 		case "0M":
-		case "0X": 
+		case "0X": */
 		case "0S":
-		infoPlatformMY.platform="GAMMA";
-		infoPlatformMY.MY="2018";
-		break;
-
-		case "B":
-		case "P(all plants)":
+			infoPlatformMY.platform="GAMMA";
+			infoPlatformMY.MY="2018";
+			break;
+		/*case "B":
+		case "P(all plants)":*/
 		case "0W":
-		infoPlatformMY.platform="GAMMA";
-		infoPlatformMY.MY="2018";
-		break;
-		
+			infoPlatformMY.platform="GAMMA";
+			infoPlatformMY.MY="2018";
+			break;
 		case "9BUO":
-		infoPlatformMY.platform="GAMMA 9Bxx"
-		infoPlatformMY.MY="2020"
-		
+			infoPlatformMY.platform="GAMMA 9Bxx"
+			infoPlatformMY.MY="2020"
+			break;
 	}
 	return infoPlatformMY;
 }
 
 function findEngineersFromPAD(PAD,platform){
+
 	$( "#validationMessage" ).empty();
 	$( "#validationMessage" ).hide();
 	
 	var list= $('.PAD-analysis').find(":selected").attr('data-listName')
-	console.log(list);
 	engineersForEWO.planner=[];
 	engineersForEWO.processor=[];
 	engineersForEWO.gl=[];
@@ -368,7 +339,7 @@ function findEngineersFromPAD(PAD,platform){
 	var clientContext = SP.ClientContext.get_current();
 	var oList = clientContext.get_web().get_lists().getByTitle('PAD&Planners'); 
 	var camlQuery = new SP.CamlQuery();
-	
+
 								 camlQuery.set_viewXml(
 													  '<View><Query><Where><Eq><FieldRef Name=\'PAD_x0020_NO\'/>' +
 													  '<Value Type=\'Text\'>' + PAD + '</Value></Eq></Where></Query>' +
@@ -381,15 +352,11 @@ function findEngineersFromPAD(PAD,platform){
 }
 
 function onPADSuccess(){
-	
 	var list=engineersForEWO.list;
 	var listItemInfo = '';
 	var listItemEnumerator = collListItem.getEnumerator();
-	while (listItemEnumerator.moveNext()) 
-		{
-		
+	while (listItemEnumerator.moveNext()){
 		var oListItem = listItemEnumerator.get_current();
-		
 		if(!oListItem.get_item(list)){
 			alert("Please check the number PAD for this workbook - nothing is shown in PAD Planners");
 			$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
@@ -404,92 +371,31 @@ function onPADSuccess(){
 		//var gl=oListItem.get_item('GL')[0].$4K_1;
 		var glMail=oListItem.get_item('GL')[0].$6_2;
 		
-		if(oListItem.get_item(list).length==2){;
-				var plannerMail2=oListItem.get_item(list)[1].$6_2;
-				var glMail2=oListItem.get_item('GL')[1].$6_2;
-				}
-		}		
-			engineersForEWO.planner.push(plannerMail);
-			engineersForEWO.processor.push(processorMail);
-			engineersForEWO.gl.push(glMail);
+		if(oListItem.get_item(list).length==2){
+			var plannerMail2=oListItem.get_item(list)[1].$6_2;
+			var glMail2=oListItem.get_item('GL')[1].$6_2;
+		}
+	}		
+	
+	engineersForEWO.planner.push(plannerMail);
+	engineersForEWO.processor.push(processorMail);
+	engineersForEWO.gl.push(glMail);
 			
-		if(plannerMail2){
-			engineersForEWO.planner.push(plannerMail2);
-		}
-		if(glMail2){
-			engineersForEWO.gl.push(glMail2);
-		}
-		console.log(engineersForEWO);
-		SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMePlaner'+"_TopSpan"].AddUserKeys(engineersForEWO.planner.join(";"));
-		SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMPDProcessor'+"_TopSpan"].AddUserKeys(engineersForEWO.processor.join(";"));
-		SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMeGL'+"_TopSpan"].AddUserKeys(engineersForEWO.gl.join(";"));
+	if(plannerMail2) engineersForEWO.planner.push(plannerMail2);
+	if(glMail2) engineersForEWO.gl.push(glMail2)
+	
+	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMePlaner'+"_TopSpan"].AddUserKeys(engineersForEWO.planner.join(";"));
+	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMPDProcessor'+"_TopSpan"].AddUserKeys(engineersForEWO.processor.join(";"));
+	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMeGL'+"_TopSpan"].AddUserKeys(engineersForEWO.gl.join(";"));
 }
 
 function onPADFail(sender, args){
 	alert('Request failed. ' + args.get_message() + '\n' + args.get_stackTrace());
 }
 
-function createSummary(){
-	mailReceivers.name=[];
-	cc.name=[];
-	mailReceivers.mail=[];
-	cc.mail=[];
-	platforms=[];
-	platformCoordinators=[];
-	
-	$(".mailReceivers").val("");
-	$(".mailCopy").val("");
-	secondValidation();
-
-
-	var arr=[".planner",".processor",".GL",".workbook"];
-	for(var i=0;i<arr.length;i++){
-		appendSummaryData(arr[i]);
-	}
-
-	checkIfVAANeedsToBeSend();
-	
-	var	mailsReceiver=mailReceivers.mail.join(";");
-	var mailsCC=cc.mail.join(";");
-	var platformCoords=platformCoordinators.join(";");
-
-	//moje
-	var PeoplePickerSummary = {'PlatformCoordinators': [], 'Processors': [], 'Planners': [], 'GL': []};
-	PeoplePickerSummary['TO'] = ('peoplePickerDRE_TopSpan');
-
-	$.map($('.planner'), function(n){PeoplePickerSummary['Planners'].push(n.id);});
-	$.map($('.processor'), function(n){PeoplePickerSummary['Processors'].push(n.id);});
-	$.map($('.GL'), function(n){PeoplePickerSummary['GL'].push(n.id);});
-	//PlatformCoordinators ?
-
-	$.each(PeoplePickerSummary['Planners'], function(val, peoplePickerElement){
-		appendSummaryMails(SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerElement], 'CC');
-	});
-
-	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].AddUserKeys(mailsReceiver);
-	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].AddUserKeys(mailsCC);
-	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].AddUserKeys(platformCoords);
-
-	//createMailToVAA();
-}
-
-
-function checkIfVAANeedsToBeSend(){
-	if($("#infoVAA").is(":checked")){
-		if($(".frontAxle").is(":checked")){
-			cc.mail.push("sebastian.maier@opel.com");
-		}
-		if($(".rearAxle").is(":checked")){
-			cc.mail.push("franz.sabo@opel.com");
-		}
-		if($(".plantVAA").is(":checked")){
-			cc.mail.push("jacek.pedrycz@opel.com");
-		}
-	}
-}
-
 function secondValidation(){
 	var validation2=true;
+
 	if($("#staticTorque").is(":checked")){
 		var arrWithClass =[".modelYear",".workbook",".platform"];
 	}else{
@@ -505,6 +411,9 @@ function secondValidation(){
 		$(".summaryBtn").show();
 		$(".summaryInfo").show();
 		$(".createBtn").show();
+
+		displaySummaryMails();
+		createMailToVAA();
 	}
 }
 
@@ -518,31 +427,30 @@ function iterateOverClass(className){
 				return false;
 			}
 		});
-		return validation;
+	return validation;
 }
-
+/*
 function checkIfIsInside(array,element){
-	if (array.length==0){
-		array.push(element);
-	}
+	if (array.length==0) array.push(element);
 	else{
-		if(array.indexOf(element)>=0){
-		//do nothing
+		if(array.indexOf(element)>=0) {
+			//do nothing
 		}else{
-		array.push(element);
+			array.push(element);
 		}
 	}
 	return array;
 }
 
 function appendSummaryData(selector){
+	console.log(selector);
 	$(selector).each(function(index){
 		if(selector==".planner"){
 			var plannerField=this.value;
 			console.log('plannerField is:' + plannerField);
 			console.log(index);
 				if ((plannerField).indexOf(";")!=-1){
-						var res = plannerField.split(";");
+						var res = pla/nnerField.split(";");
 						for(var i=0;i<res.length;i++){
 							mailReceivers.mail=checkIfIsInside(mailReceivers.mail,res[i]);
 						}
@@ -572,37 +480,6 @@ function appendSummaryData(selector){
 			console.log(platforms[i]);
 			determinePlatformCoordinators(platforms[i])
 		}
-	};
+};
 
-function determinePlatformCoordinators(workbook){
-	var mails=[];
-	switch(workbook){
-		case "Z": 
-				mails=["francesco.cau@opel.com","guenter.andreas.schieb@opel.com"," frank.sauer@opel."];
-				 break;
-		case "P3/P7":
-				mails=["guido.wagner@opel.com","angela.dudek@opel.com ","cristina.gonzalez.alcala@opel.com","bernd.langer@opel.com"];
-				 break;
-		case "J": 
-				mails=["guido.wagner@opel.com","cristina.gonzalez.alcala@opel.com"];
-				break;
-		/*case "0M":
-		case "0X":*/
-		case "0S":
-				mails=["cristina.gonzalez.alcala@opel.com","bernd.langer@opel.com","guido.wagner@opel.com"];
-				 break;
-		case "B": 
-				mails=["olaf.recha@opel.com", "marcus.sattler-schneider@opel.com","willi.blohm@opel.com","przemyslaw.wloka@opel.com","rui.canteiro@opel.com"];
-				break;
-		case "P(all plants)":
-				mails=["olaf.recha@opel.com","willi.blohm@opel.com","przemyslaw.wloka@opel.com","rui.canteiro@opel.com"];
-				break;
-		case "0W":
-				mails=["dieter.regner@opel.com","jacek.pedrycz@opel.com","przemyslaw.wloka@opel.com","zofia.guzy@opel.com"];
-				break;
-		}
-
-		for(var i=0;i<mails.length;i++){
-			platformCoordinators=checkIfIsInside( platformCoordinators,mails[i]);
-		}
-}
+*/

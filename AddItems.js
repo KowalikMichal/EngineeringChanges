@@ -40,7 +40,7 @@ function addItemsToSharePoint(){
 		});
 
 		$('#ModalInfo').modal({backdrop: "static"})
-		});
+	});
 }
 
 function addToEWOList() {
@@ -70,6 +70,7 @@ function onQueryFailedaddToEWOList(sender, args) {
 }
 
 function getUserInfo(peoplePickerElementId) {
+	console.log('getUserInfo');
 	//var peoplePicker = this.SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerDRE_TopSpan;
 
 	var users = peoplePickerElementId.GetAllUserInfo();
@@ -84,27 +85,6 @@ function getUserInfo(peoplePickerElementId) {
 		});
 	});
 }
-//new
-var MailsReceivers= {'TO': [], 'CC': []};
-function appendSummaryMails(peoplePickerElementId_ToSpan, appendTo) {
-	var users = peoplePickerElementId_ToSpan.GetAllUserInfo();
-	
-	$.each(users, function(index, element){
-		 $.when(GetUserIdFromUserName(element.Key)).done(function(data){
-			$.map(data, function(n){
-				switch(appendTo){
-					case "CC":
-						MailsReceivers['CC'].push(SP.FieldUserValue.fromUser(n.Email));
-						break;
-					case "TO":
-						MailsReceivers['TO'].push(SP.FieldUserValue.fromUser(n.Email));
-						break;
-				}
-			});
-		});
-	});
-}
-
 function GetUserIdFromUserName(userName) {
 		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
 		var accountName = userName;
@@ -121,6 +101,8 @@ function GetUserIdFromUserName(userName) {
 					}
 				});
 }
+
+
 
 // UNDER CONSTRUCTION
 //********************
@@ -141,19 +123,3 @@ function createMailToVAA(){
 		wndMail.close();    
 	}
 }
-
-
-/*
-for(var key in SPClientPeoplePicker.SPClientPeoplePickerDict){
-   //for every peoplepicker on the page
-   var picker = SPClientPeoplePicker.SPClientPeoplePickerDict[key];
-   //check out the peoplepicker object - there's a lot more you can do with it
-   console.log(picker);
-
-   //haven't found out what the second parameter does actually but it works like this 
-   picker.BatchAddUserKeysOperation(['domain\\loginname'], 0);
-}
-
-
-
-*/
