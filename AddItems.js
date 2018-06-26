@@ -2,7 +2,7 @@ var EWODeferred = new $.Deferred();
 var VAADeferred = new $.Deferred();
 var ApprovalDeferred = new $.Deferred();
 var AdministratorDeferred = new $.Deferred();
-var MailsReceivers= {'TO': [], 'CC': []};
+
 
 function addItemsToSharePoint(){
 	$('#ModalInfo :button').hide()
@@ -85,16 +85,21 @@ function getUserInfo(peoplePickerElementId) {
 	});
 }
 //new
-function appendSummaryMails(peoplePickerElementId) {
-	//var peoplePicker = this.SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerDRE_TopSpan;
-
-	var users = peoplePickerElementId.GetAllUserInfo();
-	var userMail = [];
+var MailsReceivers= {'TO': [], 'CC': []};
+function appendSummaryMails(peoplePickerElementId_ToSpan, appendTo) {
+	var users = peoplePickerElementId_ToSpan.GetAllUserInfo();
 	
 	$.each(users, function(index, element){
 		 $.when(GetUserIdFromUserName(element.Key)).done(function(data){
 			$.map(data, function(n){
-				MailsReceivers['CC'].push(SP.FieldUserValue.fromUser(n.Email));
+				switch(appendTo){
+					case "CC":
+						MailsReceivers['CC'].push(SP.FieldUserValue.fromUser(n.Email));
+						break;
+					case "TO":
+						MailsReceivers['TO'].push(SP.FieldUserValue.fromUser(n.Email));
+						break;
+				}
 			});
 		});
 	});

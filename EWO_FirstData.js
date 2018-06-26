@@ -455,14 +455,16 @@ function createSummary(){
 
 	//moje
 	var PeoplePickerSummary = {'PlatformCoordinators': [], 'Processors': [], 'Planners': [], 'GL': []};
-	PeoplePickerSummary['TO'].push('peoplePickerDRE_TopSpan');
+	PeoplePickerSummary['TO'] = ('peoplePickerDRE_TopSpan');
 
 	$.map($('.planner'), function(n){PeoplePickerSummary['Planners'].push(n.id);});
 	$.map($('.processor'), function(n){PeoplePickerSummary['Processors'].push(n.id);});
 	$.map($('.GL'), function(n){PeoplePickerSummary['GL'].push(n.id);});
 	//PlatformCoordinators ?
 
-	getUserInfo(SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePickerSummary['Planners'][0]]); //poprawić
+	$.each(PeoplePickerSummary['Planners'], function(val, peoplePickerElement){
+		appendSummaryMails(SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerElement], 'CC');
+	});
 
 	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].AddUserKeys(mailsReceiver);
 	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].AddUserKeys(mailsCC);
@@ -584,8 +586,8 @@ function determinePlatformCoordinators(workbook){
 		case "J": 
 				mails=["guido.wagner@opel.com","cristina.gonzalez.alcala@opel.com"];
 				break;
-		case "0M":
-		case "0X":
+		/*case "0M":
+		case "0X":*/
 		case "0S":
 				mails=["cristina.gonzalez.alcala@opel.com","bernd.langer@opel.com","guido.wagner@opel.com"];
 				 break;
