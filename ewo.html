@@ -1,0 +1,262 @@
+<head>
+	<title>EWO form</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
+	<script type="text/javascript" src="/_layouts/15/sp.js"></script> 
+	<script type="text/javascript" src="/_layouts/15/clienttemplates.js"></script>
+	<script type="text/javascript" src="/_layouts/15/clientforms.js"></script> 
+	<script type="text/javascript" src="/_layouts/15/clientpeoplepicker.js"></script>
+	<script type="text/javascript" src="/_layouts/15/autofill.js"></script> 
+	
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/Scripts/jquery.SPServices.min.js"></script>
+	
+	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/EWO_FirstData.js"></script>
+	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/AddItems.js"></script>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/Style/style.css">
+	<link rel="stylesheet" href="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/Style/modal.css">
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-2 col-md-offset-1 alert alert-danger" id="validationMessage"></div>
+		</div>
+		<div class="row">
+			<div class="col-md-2 col-md-offset-1 alert alert-warning alreadySentWarning"></div>
+		</div>
+		<div class="first-data container-fluid shadow">
+			<h3 class="center-block">Basic info about EWO</h3>
+			<div class="row flex-space-around">
+				<div class="col-sm-3">
+					<div class="form-group">
+						<div class="checkbox">
+							<label><input type="checkbox" id="staticTorque" value=""><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>Static Torque</label>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="form-group">
+						<div class="checkbox">
+							<label><input type="checkbox" id="infoVAA" value=""><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VAA affected</label>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-4">
+					<div class="form-group">
+						<label for="usr">EWO Number:</label>
+						<input type="text" class="form-control generalInfoOfEWO" id="numberEWO">
+					</div>
+				</div>
+				<div class="col-sm-4">
+					<div class="form-group">
+						<label for="usr">EWO Title:</label>
+						<input type="text" class="form-control generalInfoOfEWO" id="titleEWO">
+					</div>
+				</div>
+				<div class="col-sm-4">
+					<div class="form-group">
+						<label for="usr">DRE:</label>
+						<div id="peoplePickerDRE">
+						</div>
+					</div>
+				</div>
+				
+			</div>
+			<div class="row">
+				<div class="col-sm-2">
+					<div class="form-group">
+						<label for="usr">Reason Code:</label>
+						<select type="text" class="form-control RC">
+							<option value="Please pick RC" selected disabled></option>
+							<option value="M1">M1</option>
+							<option value="M2">M2</option>
+							<option value="M3">M3</option>
+							<option value="M4">M4</option>
+							<option value="M5">M5</option>
+							<option value="M6">M6</option>
+							<option value="M7">M7</option>
+							<option value="MZ">MZ</option>
+						</select>
+					</div>
+				</div>
+				<div class="col-sm-10">
+					<div class="form-group">
+						<label for="usr">Attachment Link:</label> 
+						<input type="text" class="form-control my-basic-input attachments" placeholder="No attachments added">
+					</div>
+				</div>
+				</div> 
+			</div>
+			<div class="row text-center">
+				<div class="col-10">
+					<button type="button" class="btn btn-primary" id="checkGeneralData">Go to PAD analysis</button>
+				</div>
+			</div>
+	</div>
+	<div class="container-fluid">
+		<div class="PAD-analysis shadow">
+			<h3 class="center-block">Information about PAD</h3>
+			<div class="row section clone">
+				<div class="col-sm-2">
+					<div class="form-group">
+						<label for="usr">Book:</label>
+						<select type="text" class="form-control padInfo workbook">
+							 <option value="Please pick workbook" selected disabled></option>
+							 <option value="Z" data-listName="_x0045_2">Z</option> <!-- $('.PAD-analysis').find(":selected").attr('data-listName') -->
+							 <option value="P3/P7" data-listName="P7_x002f_P3">P3/P7</option>
+							 <option value="J" data-listName="Gamma">J</option>
+							 <option value="0X" data-listName="Corsa">0X</option>
+							 <option value="0M" data-listName="Adam">0M</option>
+							 <option value="0S" data-listName="_x0050_2">0S</option>
+							 <option value="P(all plants)" data-listName="P_x0020_all_x0020_plants">P(all plants)</option>
+							 <option value="0W" data-listName="Cascada">0W</option>
+							 <option value="B" data-listName="D2xx">B</option>
+							 <option value="9BUO" data-listName="">9BUO</option>
+						</select>  
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="form-group padInfo">
+						<label for="usr">MY:</label>
+						<input type="text" class="form-control modelYear">
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="form-group padInfo">
+						<label for="usr">Platform:</label>
+						<input type="text" class="form-control platform">
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="form-group padInfo">
+						<label for="usr">#PAD:</label>
+						<input type="text" class="form-control numberPAD">
+					</div>
+				</div>
+				
+				<div class="col-sm-3">
+					<div class="form-group padInfo">
+						<label for="usr">ME Planner:</label>
+						<div id="peoplePickerMePlaner">
+							<!--<input class="form-control generalInfoOfEWO planner" type="text">-->	
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="form-group padInfo">
+						<label for="usr">MPD Processor:</label>
+						<div id="peoplePickerMPDProcessor">
+							<!--<input class="form-control generalInfoOfEWO processor" type="text">	-->
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="form-group padInfo">
+						<label for="usr">ME GL:</label>
+						<div id="peoplePickerMeGL">
+							<!--<input class="form-control generalInfoOfEWO GL" type="text">-->
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-1">
+					<p><a href="#" class='removeSection'>Minus Section</a></p>
+				</div>
+				<div class="col-sm-1">
+					<p><a href="#" class='addSection'>Plus Section</a></p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="VAA-info shadow">
+			<h3 class="center-block">Information about VAA</h3>
+			<div class="row section">
+				<div class="col-sm-6">
+					<div class="form-group infoVAA checkbox">
+						<label><input type="checkbox" value="VRL" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRL</label>
+						<label><input type="checkbox" value="VRM" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRM</label>
+						<label><input type="checkbox" value="VRN" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRN</label>
+						<label><input type="checkbox" value="VRR" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRR</label>
+						<label><input type="checkbox" value="VRK" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRK</label>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group infoVAA checkbox">
+						<label for="usr"><b>VAA plant:<b></label>
+						<label><input type="checkbox" value="Gliwice" class="plantVAA"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>Gliwice</label>
+						<label><input type="checkbox" value="E.Port" class="plantVAA"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>E.Port</label>
+						<label><input type="checkbox" value="Rue" class="plantVAA"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>Rue</label>
+						<label><input type="checkbox" value="Zaragoza" class="plantVAA"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>Zaragoza</label>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="summaryBtn">
+		<div class="row text-center">
+			<div class="col-10">
+				<button type="button" class="btn btn-primary" id="doSummary">Go to Summary</button>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="summaryInfo shadow">
+			<div class="row text-center">
+				<div class="col-sm-12">
+					<div class="form-group">
+						<label for="usr">Planners:</label> 
+						<div id="peoplePickermailReceivers">
+							<!--<input class="form-control my-basic-input mailReceivers" type="text">-->
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-12">
+					<div class="form-group">
+						<label for="usr">Processors:</label>
+						<div id="peoplePickermailMailCopy">
+							<!--<input class="form-control my-basic-input " type="text">-->
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-12">
+					<div class="form-group">
+						<label for="usr">Platform coordinators (also on CC) :</label>
+						<div id="peoplePickermailPlatformCoordinators">
+							<!--<input class="form-control my-basic-input platformCoordinators" type="text">-->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="createBtn">
+		<div class="row text-center">
+			<div class="col-10">
+				<button type="button" class="btn btn-primary" id="create">Send to SharePoint -jeszcze nie dziala </button>
+			</div>
+		</div>
+	</div>
+	<!--End of container--> 
+	<!-- Modal -->
+	<div id="ModalInfo" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-confirm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<div class="icon-box">
+					</div>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				</div>
+				<div class="modal-body text-center">
+					<div id="ModalInfoBody"></div>
+					<button class="btn btn-success"><span>Refresh page</span> <i class="glyphicon glyphicon-refresh"></i></button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
