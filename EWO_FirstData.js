@@ -1,16 +1,17 @@
-	var engineersForEWO={planner:[],processor:[],gl:[],list:""};
-	var actualSelection;
+var engineersForEWO={planner:[],processor:[],gl:[],list:""};
+var actualSelection;
 //used for final engineers matching
-	var mailReceivers={mail:[]}; //possible to add name
-	var cc={mail:[]};//possible to add name
-	
-	var platforms=[]; //actually workbookw
-	var platformCoordinators=[]; //guys for given workbooks
+var mailReceivers={mail:[]}; //possible to add name
+var cc={mail:[]};//possible to add name
 
-	var plannersAndGL={planner:[],gl:[]};
+var platforms=[]; //actually workbookw
+var platformCoordinators=[]; //guys for given workbooks
+
+var plannersAndGL={planner:[],gl:[]};
 
 var deferred = new $.Deferred();
 var counter = null;
+var compilane= {};
 
 $(function(){
 	SP.SOD.executeFunc('sp.js', 'SP.ClientContext',function(){
@@ -73,7 +74,6 @@ function readyFunction(){
 	
 	$('body').on('click', '.addSection', function(){
 		if (counter == null) counter = 1;
-		console.log(counter);
 		clonePadSection(counter);
 		counter++;
 	}); 
@@ -92,7 +92,7 @@ function readyFunction(){
 				return false;
 			})
 		}else{
-			alert("At least one PAD section needs to be fulfilled!");
+			DisplayModalFail("At least one PAD section needs to be fulfilled!", false);
 		}
 		return false;
 	});
@@ -154,18 +154,15 @@ function validateNumberLength(selectorID){
 function validateNumber(){
 	$(".alert-danger").children().remove();
 	$(".alert-danger").hide();
+
 	var selectorID="#numberEWO";
-	
-	//setTrimValue(selectorID);
 	removerErrorClass(selectorID);
 	
 	if($(selectorID).val().indexOf("(")==-1){
 		if(!isNaN($(selectorID).val())){
 			if($(selectorID).val().length!=7){
 				validateNumberLength(selectorID);
-			}/*else{
-				setTrimValue(selectorID);
-			}*/
+			}
 		}else{
 			$("#validationMessage").append("<p clas='errorInfo'>Number EWO has to be number.</p>");
 			isWrong(selectorID);
@@ -174,9 +171,6 @@ function validateNumber(){
 		if($(selectorID).val().length!=10){
 			validateNumberLength(selectorID);
 		}
-		/*else{
-			setTrimValue(selectorID);
-		}*/
  }
 	selectorID="#titleEWO";
 	validateTitle(selectorID);	
@@ -187,9 +181,7 @@ function validateTitle(selectorID){
 	if(!isNaN($(selectorID).val()) ||$(selectorID).val()==""){
 		$("#validationMessage" ).append( "<p clas='errorInfo'>Title shouldn't be only numbers and/or empty </p>");
 		isWrong(selectorID);
-	}/*else{
-		setTrimValue(selectorID);	
-	}*/
+	}
 	selectorID = "#peoplePickerDRE_TopSpan_HiddenInput";
 	validateDRE(selectorID);
 }
@@ -227,13 +219,16 @@ function isEmpty(str){
 }
 function checkOveralValidation(){
 	if(checkErrorClass("#numberEWO") || checkErrorClass("#peoplePickerDRE_TopSpan_HiddenInput") || (checkErrorClass("#titleEWO"))){
-		alert("Check correctness!");
+		DisplayModalFail("Check correctness!", false);
 		$(".alert-danger").show();
 	}
 	else{
 		$(".PAD-analysis").show();
 		$(".summaryBtn").show();
 		if($("#infoVAA").is(":checked")) $(".VAA-info").show();
+		compilane.EWONo = $('#numberEWO').val();
+		compilane.Title = $('#titleEWO').val();
+		compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
 	}
 }
 
@@ -265,9 +260,9 @@ function checkEWO(listName, EWONo) {
 		type: "GET",
 		dataType: "json",
 		}).done( function(data){
-			if(data.value.length > 0) alert('EWO number exist on database!')
+			if(data.value.length > 0) DisplayModalFail('EWO number exist on database!', false);
 		}).fail(function(errMessage){
-			alert('Error in checkEWO: '+errMessage);
+			DisplayModalFail('Error in checkEWO: '+errMessage, false);
 		});
 }
 
@@ -358,7 +353,7 @@ function onPADSuccess(){
 	while (listItemEnumerator.moveNext()){
 		var oListItem = listItemEnumerator.get_current();
 		if(!oListItem.get_item(list)){
-			alert("Please check the number PAD for this workbook - nothing is shown in PAD Planners");
+			DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
 			$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
 			$("#validationMessage").show();
 			break;
@@ -390,7 +385,7 @@ function onPADSuccess(){
 }
 
 function onPADFail(sender, args){
-	alert('Request failed. ' + args.get_message() + '\n' + args.get_stackTrace());
+	DisplayModalFail('Request failed. ' + args.get_message() + '\n' + args.get_stackTrace(), false);
 }
 
 function secondValidation(){
@@ -422,7 +417,7 @@ function iterateOverClass(className){
 	$(className).each(function(){
 			if(this.value!=""){ 
 			}else{
-				alert("Please fulfill necessary data");
+				DisplayModalFail("Please fulfill necessary data" ,false);
 				validation=false;
 				return false;
 			}
@@ -483,3 +478,46 @@ function appendSummaryData(selector){
 };
 
 */
+
+function SetPeopleField(peoplePickerElementId) {
+	var peoplePickerElementId = SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerElementId];
+	var DefferSetPeopleFiled = new $.Deferred();
+	var users = peoplePickerElementId.GetAllUserInfo();
+	var userMail = [];
+	var ReturnValue = null;
+	
+	$.each(users, function(index, element){
+		 $.when(GetUserNameToSetPeopleField(element.Key, DefferSetPeopleFiled)).done(function(data){
+			$.map(data, function(n){
+				userMail.push(SP.FieldUserValue.fromUser(n.Email));
+				if (userMail.length == users.length) DefferSetPeopleFiled.resolve(userMail);
+			});
+		});
+	});
+	console.log(DefferSetPeopleFiled.state());
+	DefferSetPeopleFiled.done(function(userMail){
+		ReturnValue = userMail;
+	}).fail(function(){
+		DisplayModalFail('User not find', false);
+	});
+
+	return ReturnValue;
+}
+function GetUserNameToSetPeopleField(userName, DefferSetPeopleFiled) {
+		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
+		var accountName = userName;
+		return $.ajax({
+					url: siteUrl + "/_api/web/siteusers(@v)?@v='" + 
+						encodeURIComponent(accountName) + "'",
+					method: "GET",
+					async: false,
+					headers: { "Accept": "application/json; odata=verbose" },
+					success: function (data) {
+						return data.d.Emai;
+					},
+					error: function (data) {
+						console.log(JSON.stringify(data));
+						return DefferSetPeopleFiled.reject();
+					}
+				});
+};

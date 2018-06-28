@@ -37,6 +37,11 @@ function appendSummaryMails(peoplePickerElementId_ToSpan, appendTo) {
 						MailsReceivers['TO'].push(SP.FieldUserValue.fromUser(n.Email));
 						SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].AddUserKeys(n.Email);
 						break;
+					case "DRE":
+						compilane.DRE = 
+						MailsReceivers['CC'].push(SP.FieldUserValue.fromUser(n.Email));
+						SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].AddUserKeys(n.Email);
+						break;
 				}
 			});
 		});
