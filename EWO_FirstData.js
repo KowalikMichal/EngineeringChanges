@@ -10,8 +10,8 @@ var platformCoordinators=[]; //guys for given workbooks
 var plannersAndGL={planner:[],gl:[]};
 
 var deferred = new $.Deferred();
-var counter = null;
-var compilane= {};
+var counter = 0;
+var compilane= {'Planner': [], 'Processor': [],  'GL': [],'VAACoordinators': []};
 
 $(function(){
 	SP.SOD.executeFunc('sp.js', 'SP.ClientContext',function(){
@@ -55,6 +55,10 @@ for(var key in SPClientPeoplePicker.SPClientPeoplePickerDict){
 */
 
 function readyFunction(){
+	$('input[type="text"]').change(function(){
+		this.value = $.trim(this.value);
+	});
+
 	$('#numberEWO').focusout(function(){
 		checkEWO('EWO%20List', $('#numberEWO').val());
 	});
@@ -73,7 +77,6 @@ function readyFunction(){
 	});
 	
 	$('body').on('click', '.addSection', function(){
-		if (counter == null) counter = 1;
 		clonePadSection(counter);
 		counter++;
 	}); 
@@ -206,14 +209,7 @@ function removerErrorClass(ID){
 	var checkError = $(ID).parent().hasClass("has-error") ? true: false;
 	if(checkError) $(ID).parent().removeClass('has-error');
 }
-/*
-function setTrimValue(ID){
-	if(/^\s/.test($(ID).val())|| /\s$/.test($(ID).val())){
-		var correctValue =$.trim( $(ID).val());
-		$(ID).val(correctValue);
-	}
-}
-*/
+
 function isEmpty(str){
 	return !str.replace(/^\s+/g, '').length; 
 }
@@ -226,9 +222,11 @@ function checkOveralValidation(){
 		$(".PAD-analysis").show();
 		$(".summaryBtn").show();
 		if($("#infoVAA").is(":checked")) $(".VAA-info").show();
+
 		compilane.EWONo = $('#numberEWO').val();
 		compilane.Title = $('#titleEWO').val();
 		compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
+		compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
 	}
 }
 
@@ -273,7 +271,7 @@ function checkEWO(listName, EWONo) {
 function clonePadSection(counter){
 	var template = null;
 	template = $(".clone").clone().find("input").val("").end();
-	template.removeClass('clone');
+	template.removeClass('clone').addClass(counter); //pobranie gl, planer po klasie clone, później sprawdzenie couter czy się zwiekszył ->pobranie
 	var tempInitializePeoplePicker = ['peoplePickerMePlaner' + counter, 'peoplePickerMPDProcessor' + counter, 'peoplePickerMeGL' + counter];
 	
 	template.find('#peoplePickerMePlaner').attr('id', tempInitializePeoplePicker[0]);
@@ -285,8 +283,9 @@ function clonePadSection(counter){
 	initializePeoplePicker(tempInitializePeoplePicker[0], true,'generalInfoOfEWO planner');
 	initializePeoplePicker(tempInitializePeoplePicker[1], true,'generalInfoOfEWO processor');
 	initializePeoplePicker(tempInitializePeoplePicker[2], true,'generalInfoOfEWO GL');
-}
 
+}
+//var EngineersForEWO= {'Planer': [], 'processor': [], 'GL': []};
 function checkPlatform(book){
 	var infoPlatformMY={};
 	switch(book){
@@ -350,6 +349,7 @@ function onPADSuccess(){
 	var list=engineersForEWO.list;
 	var listItemInfo = '';
 	var listItemEnumerator = collListItem.getEnumerator();
+
 	while (listItemEnumerator.moveNext()){
 		var oListItem = listItemEnumerator.get_current();
 		if(!oListItem.get_item(list)){
@@ -358,13 +358,12 @@ function onPADSuccess(){
 			$("#validationMessage").show();
 			break;
 		}
-		//var planner=oListItem.get_item(list)[0].$4K_1;
-		console.log(oListItem.get_item(list)[0]);
+
 		var plannerMail=oListItem.get_item(list)[0].$6_2;	
-		//var processor=oListItem.get_item('MPD')[0].$4K_1;
 		var processorMail=oListItem.get_item('MPD')[0].$6_2;
-		//var gl=oListItem.get_item('GL')[0].$4K_1;
 		var glMail=oListItem.get_item('GL')[0].$6_2;
+
+		EngineersForEWO.Typical
 		
 		if(oListItem.get_item(list).length==2){
 			var plannerMail2=oListItem.get_item(list)[1].$6_2;
@@ -494,7 +493,7 @@ function SetPeopleField(peoplePickerElementId) {
 			});
 		});
 	});
-	console.log(DefferSetPeopleFiled.state());
+
 	DefferSetPeopleFiled.done(function(userMail){
 		ReturnValue = userMail;
 	}).fail(function(){
@@ -518,6 +517,25 @@ function GetUserNameToSetPeopleField(userName, DefferSetPeopleFiled) {
 					error: function (data) {
 						console.log(JSON.stringify(data));
 						return DefferSetPeopleFiled.reject();
+					}
+				});
+};
+
+function GetUserNameToSetPeoplePicker(userName) {
+		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
+		var accountName = userName;
+		return $.ajax({
+					url: siteUrl + "/_api/web/siteusers(@v)?@v='" + 
+						encodeURIComponent(accountName) + "'",
+					method: "GET",
+					async: false,
+					headers: { "Accept": "application/json; odata=verbose" },
+					success: function (data) {
+						return data.d.Emai;
+					},
+					error: function (data) {
+						console.log(JSON.stringify(data));
+						return null;
 					}
 				});
 };

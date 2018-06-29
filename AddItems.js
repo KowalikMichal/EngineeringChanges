@@ -46,12 +46,14 @@ function DisplayModalFail(error, reload){
 
 function addItemsToSharePoint(){
 	DisplayModalWorking();
+	
 	addToEWOList();
 //if static torque just add item to static torque part
 
 // if VAA add to new list VAA
 
 // add to EWO Cost, Approval List and Administrator List
+
 
 	$.when(EWODeferred).done(function(){ //works or not?
 		DisplayModalDone();
@@ -62,31 +64,29 @@ function addItemsToSharePoint(){
 
 
 
-function addToEWOList(compilane) {
-
+function addToEWOList() {
 	var user = SP.FieldUserValue.fromUser(userMail);
 	var clientContext = new SP.ClientContext.get_current();	
 	var oList = clientContext.get_web().get_lists().getByTitle('EWOList');
 	var itemCreateInfo = new SP.ListItemCreationInformation();
 	this.oListItem = oList.addItem(itemCreateInfo);
-// ADD COLUMNS
-	oListItem.set_item('EWONo', compilane.EWONo); //EWO number
-	oListItem.set_item('Title', compilane.Title);
-	oListItem.set_item('Initiator', compilane.DRE);
-	oListItem.set_item('Platform', compilane.Platform);
-	oListItem.set_item('VPPS_x0027_s', compilane.VPPS); //VPPS's what
-	oListItem.set_item('PADNo', compilane.PADNo);
-	oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response)
-	oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO);
-	oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC);
-	if (compilane.AttachmentLink !== null) oListItem.set_item('AttachmentLink', compilane.AttachmentLink);
-	oListItem.set_item('MY', compilane.MY);
-	oListItem.set_item('VAA_x0020_type', compilane.VAAType);
-	oListItem.set_item('EWOLaunchDate', compilane.EWOLaunchDate);
-
+		oListItem.set_item('EWONo', compilane.EWONo); //EWO number
+		oListItem.set_item('Title', compilane.Title);
+		oListItem.set_item('Initiator', compilane.DRE);
+		oListItem.set_item('Platform', compilane.Platform);
+		oListItem.set_item('VPPS_x0027_s', compilane.VPPS); //VPPS's what
+		oListItem.set_item('PADNo', compilane.PADNo);
+		oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response)
+		oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO);
+		oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC);
+		oListItem.set_item('MY', compilane.MY);
+		oListItem.set_item('EWOLaunchDate', compilane.EWOLaunchDate);
+			if (compilane.AttachmentLink !== null) oListItem.set_item('AttachmentLink', compilane.AttachmentLink);
+			if (compilane.ReasonCode !== null) oListItem.set_item('ReasonCode', compilane.ReasonCode);
+			if (compilane.VAAType !== null) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
+		
 	oListItem.update();
 	clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceededaddToEWOList), Function.createDelegate(this, this.onQueryFailedaddToEWOList));
-
 }
 
 function onQuerySucceededaddToEWOList() {
@@ -106,7 +106,7 @@ function getUserInfo(peoplePickerElementId) {
 	var userMail = [];
 	
 	$.each(users, function(index, element){
-		 $.when(GetUserIdFromUserName(element.Key)).done(function(data){
+		 $.when(GetUserEmailFromKey(element.Key)).done(function(data){
 			$.map(data, function(n){
 				userMail.push(SP.FieldUserValue.fromUser(n.Email));
 			});
@@ -114,7 +114,7 @@ function getUserInfo(peoplePickerElementId) {
 		});
 	});
 }
-function GetUserIdFromUserName(userName) {
+function GetUserEmailFromKey(userName) {
 		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
 		var accountName = userName;
 		return $.ajax({

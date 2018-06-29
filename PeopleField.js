@@ -2,6 +2,50 @@ var MailsReceivers= {'TO': [], 'CC': [], 'VAA': []};
 
 function displaySummaryMails(){
 	checkIfVAANeedsToBeSend();
+
+	console.log(couter);
+
+	$.map($('.clone .planner'), function(n){
+		//add mail to summary
+		//GetUserNameToSetPeoplePicker('123@opel.com')
+		compilane.Planner.push(SetPeopleField(n.id));
+	});
+	$.map($('.clone .processor'), function(n){
+		compilane.Processor.push(SetPeopleField(n.id));
+	});
+	$.map($('.clone .GL'), function(n){
+		compilane.GL.push(SetPeopleField(n.id));
+	});
+
+	if (counter !== 0){
+		for (var index in counter){
+			//inex 0,1,2,3,5 ->klasa
+			$.map($('.planner .'+index), function(n){
+				console.log(n);
+			});
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 	var PeoplePickerSummary = {'Processors': [], 'Planners': [], 'GL': []};
 	PeoplePickerSummary['TO'] = ('peoplePickerDRE_TopSpan');
 
@@ -20,7 +64,7 @@ function displaySummaryMails(){
 
 	$.each(PeoplePickerSummary['GL'], function(val, peoplePickerElement){
 		appendSummaryMails(SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerElement], 'CC');
-	});
+	});*/
 }
 
 function appendSummaryMails(peoplePickerElementId_ToSpan, appendTo) {
@@ -38,7 +82,6 @@ function appendSummaryMails(peoplePickerElementId_ToSpan, appendTo) {
 						SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].AddUserKeys(n.Email);
 						break;
 					case "DRE":
-						compilane.DRE = 
 						MailsReceivers['CC'].push(SP.FieldUserValue.fromUser(n.Email));
 						SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].AddUserKeys(n.Email);
 						break;
@@ -49,11 +92,19 @@ function appendSummaryMails(peoplePickerElementId_ToSpan, appendTo) {
 }
 
 function checkIfVAANeedsToBeSend(){
+	compilane.VAACoordinators = [];
 	if($("#infoVAA").is(":checked")){
+		var mails = [];
 		$('#peoplePickermailVAACoordinators').parent().removeAttr('hidden');
-		if($(".frontAxle").is(":checked")) SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys("sebastian.maier@opel.com");
-		if($(".rearAxle").is(":checked")) SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys("franz.sabo@opel.com");
-		if($(".plantVAA").is(":checked")) SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys("jacek.pedrycz@opel.com");
+
+		if($(".frontAxle").is(":checked")) mails.push("sebastian.maier@opel.com");
+		if($(".rearAxle").is(":checked")) mails.push("franz.sabo@opel.com");
+		if($(".plantVAA").is(":checked")) mails.push("jacek.pedrycz@opel.com");
+
+		for (var index in mails){
+			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys(mails[index]);
+			compilane.VAACoordinators.push(SP.FieldUserValue.fromUser(mails[index]));	
+		}
 	}
 
 }
@@ -85,10 +136,8 @@ function determinePlatformCoordinators(workbook){
 				mails=["dieter.regner@opel.com","jacek.pedrycz@opel.com","przemyslaw.wloka@opel.com","zofia.guzy@opel.com"];
 				break;
 		}
-		/*for(var i=0;i<mails.length;i++){
-			platformCoordinators=checkIfIsInside( platformCoordinators,mails[i]);
-		}*/
 		for (var index in mails){
 			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].AddUserKeys(mails[index]);
+			compilane.CC.push(SP.FieldUserValue.fromUser(mails[index]));	
 		}
 }
