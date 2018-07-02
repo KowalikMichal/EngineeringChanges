@@ -26,24 +26,6 @@ function displaySummaryMails(){
 		}
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
 
 	var PeoplePickerSummary = {'Processors': [], 'Planners': [], 'GL': []};
@@ -106,7 +88,79 @@ function checkIfVAANeedsToBeSend(){
 			compilane.VAACoordinators.push(SP.FieldUserValue.fromUser(mails[index]));	
 		}
 	}
+}
 
+function SetPeopleField(peoplePickerElementId) {
+	var DefferSetPeopleFiled = new $.Deferred();
+
+	var peoplePickerElementId = SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerElementId];
+	var users = peoplePickerElementId.GetAllUserInfo();
+	var userMail = [];
+	var ReturnValue = null;
+	
+	$.each(users, function(index, element){
+		 $.when(GetUserNameToSetPeopleField(element.Key, DefferSetPeopleFiled)).done(function(data){
+			$.map(data, function(n){
+				userMail.push(SP.FieldUserValue.fromUser(n.Email));
+				if (userMail.length == users.length) DefferSetPeopleFiled.resolve(userMail);
+			});
+		});
+	});
+
+	DefferSetPeopleFiled.done(function(userMail){
+		ReturnValue = userMail;
+	}).fail(function(){
+		DisplayModalFail('User not find', false);
+	});
+	return ReturnValue;
+}
+
+function GetUserNameToSetPeopleField(userName, DefferSetPeopleFiled) {
+		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
+		var accountName = userName;
+		return $.ajax({
+					url: siteUrl + "/_api/web/siteusers(@v)?@v='" + 
+						encodeURIComponent(accountName) + "'",
+					method: "GET",
+					async: false,
+					headers: { "Accept": "application/json; odata=verbose" },
+					success: function (data) {
+						return data.d.Emai;
+					},
+					error: function (data) {
+						console.log(JSON.stringify(data));
+						return DefferSetPeopleFiled.reject();
+					}
+				});
+}
+
+function GetUserNameToSetPeoplePicker(userName) {
+		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
+		var accountName = userName;
+		return $.ajax({
+					url: siteUrl + "/_api/web/siteusers(@v)?@v='" + 
+						encodeURIComponent(accountName) + "'",
+					method: "GET",
+					async: false,
+					headers: { "Accept": "application/json; odata=verbose" },
+					success: function (data) {
+						return data.d.Emai;
+					},
+					error: function (data) {
+						console.log(JSON.stringify(data));
+						return null;
+					}
+				});
+}
+
+function CheckPeopleField(peoplePicker_TopSpan_HiddenInput){
+		var nameDRE = $.parseJSON($(peoplePicker_TopSpan_HiddenInput).val());
+
+		if (!(nameDRE.length == 0 || nameDRE == null)){
+			if(nameDRE[0].hasOwnProperty('Description')) return true;
+			else return false;
+		}
+		else return false;
 }
 
 function determinePlatformCoordinators(workbook){
@@ -116,7 +170,7 @@ function determinePlatformCoordinators(workbook){
 				mails=["francesco.cau@opel.com","guenter.andreas.schieb@opel.com"," frank.sauer@opel.com"];
 				 break;
 		case "P3/P7":
-				mails=["guido.wagner@opel.com","angela.dudek@opel.com ","cristina.gonzalez.alcala@opel.com","bernd.langer@opel.com"];
+				mails=["guido.wagner@opel.com","angela.dudek@opel.com","cristina.gonzalez.alcala@opel.com","bernd.langer@opel.com"];
 				 break;
 		case "J": 
 				mails=["guido.wagner@opel.com","cristina.gonzalez.alcala@opel.com"];
@@ -136,6 +190,7 @@ function determinePlatformCoordinators(workbook){
 				mails=["dieter.regner@opel.com","jacek.pedrycz@opel.com","przemyslaw.wloka@opel.com","zofia.guzy@opel.com"];
 				break;
 		}
+
 		for (var index in mails){
 			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].AddUserKeys(mails[index]);
 			compilane.CC.push(SP.FieldUserValue.fromUser(mails[index]));	

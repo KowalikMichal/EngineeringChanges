@@ -1,4 +1,5 @@
 var EWODeferred = new $.Deferred();
+
 var VAADeferred = new $.Deferred();
 var ApprovalDeferred = new $.Deferred();
 var AdministratorDeferred = new $.Deferred();
@@ -46,7 +47,10 @@ function DisplayModalFail(error, reload){
 
 function addItemsToSharePoint(){
 	DisplayModalWorking();
-	
+	//SetPeopleField
+
+
+
 	addToEWOList();
 //if static torque just add item to static torque part
 
@@ -65,25 +69,25 @@ function addItemsToSharePoint(){
 
 
 function addToEWOList() {
-	var user = SP.FieldUserValue.fromUser(userMail);
 	var clientContext = new SP.ClientContext.get_current();	
 	var oList = clientContext.get_web().get_lists().getByTitle('EWOList');
+
 	var itemCreateInfo = new SP.ListItemCreationInformation();
 	this.oListItem = oList.addItem(itemCreateInfo);
-		oListItem.set_item('EWONo', compilane.EWONo); //EWO number
+		oListItem.set_item('EWONo', compilane.EWONo);
 		oListItem.set_item('Title', compilane.Title);
 		oListItem.set_item('Initiator', compilane.DRE);
-		oListItem.set_item('Platform', compilane.Platform);
+		oListItem.set_item('Platform', compilane.Platform); ///
 		oListItem.set_item('VPPS_x0027_s', compilane.VPPS); //VPPS's what
-		oListItem.set_item('PADNo', compilane.PADNo);
-		oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response)
-		oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO);
-		oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC);
-		oListItem.set_item('MY', compilane.MY);
-		oListItem.set_item('EWOLaunchDate', compilane.EWOLaunchDate);
-			if (compilane.AttachmentLink !== null) oListItem.set_item('AttachmentLink', compilane.AttachmentLink);
+		oListItem.set_item('PADNo', compilane.PADNo); //
+		oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response) //
+		oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO); //
+		oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC); //
+		oListItem.set_item('MY', compilane.MY); //
+		oListItem.set_item('VAA_x0020_type', compilane.VAAType); //
+			if (compilane.AttachmentLink !== null) oListItem.set_item('AttachmentLink', compilane.AttachmentLink); //
 			if (compilane.ReasonCode !== null) oListItem.set_item('ReasonCode', compilane.ReasonCode);
-			if (compilane.VAAType !== null) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
+			if (compilane.VAAType !== null || compilane.VAAType.length !== 0) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
 		
 	oListItem.update();
 	clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceededaddToEWOList), Function.createDelegate(this, this.onQueryFailedaddToEWOList));
@@ -97,40 +101,6 @@ function onQueryFailedaddToEWOList(sender, args) {
 	console.log('addToEWOList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
 	EWODeferred.reject();
 }
-
-function getUserInfo(peoplePickerElementId) {
-	console.log('getUserInfo');
-	//var peoplePicker = this.SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerDRE_TopSpan;
-
-	var users = peoplePickerElementId.GetAllUserInfo();
-	var userMail = [];
-	
-	$.each(users, function(index, element){
-		 $.when(GetUserEmailFromKey(element.Key)).done(function(data){
-			$.map(data, function(n){
-				userMail.push(SP.FieldUserValue.fromUser(n.Email));
-			});
-			if (userMail.length == users.length) return deferred.resolve(userMail);
-		});
-	});
-}
-function GetUserEmailFromKey(userName) {
-		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
-		var accountName = userName;
-		return $.ajax({
-					url: siteUrl + "/_api/web/siteusers(@v)?@v='" + 
-						encodeURIComponent(accountName) + "'",
-					method: "GET",
-					headers: { "Accept": "application/json; odata=verbose" },
-					success: function (data) {
-						return data.d.Emai;
-					},
-					error: function (data) {
-						console.log(JSON.stringify(data));
-					}
-				});
-}
-
 
 
 // UNDER CONSTRUCTION

@@ -1,3 +1,7 @@
+//*************************************************************************
+//********************BASIC************************************************
+//*************************************************************************
+
 var engineersForEWO={planner:[],processor:[],gl:[],list:""};
 var actualSelection;
 //used for final engineers matching
@@ -9,7 +13,7 @@ var platformCoordinators=[]; //guys for given workbooks
 
 var plannersAndGL={planner:[],gl:[]};
 
-var deferred = new $.Deferred();
+var deferred = new $.Deferred(); //delete after optymalization -> used in addToEwo
 var counter = 0;
 var compilane= {'Planner': [], 'Processor': [],  'GL': [],'VAACoordinators': []};
 
@@ -26,7 +30,7 @@ $(function(){
 	});
 });
 
-//// people picker
+//// initialize people picker
 function initializePeoplePicker(peoplePickerElementId, AllowMultipleValues, customClass) {
 	var schema = {};
 	schema['PrincipalAccountType'] = 'User,DL,SecGroup,SPGroup';
@@ -47,106 +51,76 @@ function initializePeoplePicker(peoplePickerElementId, AllowMultipleValues, cust
 	$('#'+peoplePickerElementId+'_TopSpan').addClass('form-control');
 }
 
-/*
-//for every peoplepicker on the page 
-for(var key in SPClientPeoplePicker.SPClientPeoplePickerDict){ 
-	console.log(key);
-}
-*/
-
 function readyFunction(){
 	$('input[type="text"]').change(function(){
 		this.value = $.trim(this.value);
 	});
 
 	$('#numberEWO').focusout(function(){
-		checkEWO('EWO%20List', $('#numberEWO').val());
+		checkEWO('EWO%20List', $('#numberEWO').val()); //old list
+		checkEWO('EWOList', $('#numberEWO').val());  //new list
 	});
 
 	$(".generalInfoOfEWO").change(function(){
 		hidePadData();
 	});
-	
-	$("#checkGeneralData").click(function(){ 
+
+	$("#checkGeneralData").on('click',function(){ 
 		hidePadData();
 		validateNumber();	
 	});
-	
-	$("#addDRE").click(function(){ 
+
+	$("#addDRE").on('click', function(){ 
 		getDataToAddDRE($("#nameDRE").val(),$("#mailDRE").val());
 	});
-	
+
 	$('body').on('click', '.addSection', function(){
 		clonePadSection(counter);
 		counter++;
 	}); 
-	
+
 	$('body').on('click', '#doSummary', function(){
 		secondValidation();
 	}); 
 
-
 	$('body').on('click', '.removeSection', function(){
 		if ($(this).closest(".section").hasClass('clone')){ 
-			//do nothing
+			//do nothing, prevent remove clone section
 		}else if ($('.removeSection').length > 1){
 			$(this).parent().fadeOut(300, function(){
 				$(this).parent().parent().remove();
 				return false;
 			})
-		}else{
-			DisplayModalFail("At least one PAD section needs to be fulfilled!", false);
 		}
 		return false;
 	});
-	
+
 	$(".PAD-analysis" ).on( "change", ".workbook", function() {
 		var platformAndMY=checkPlatform(this.value);
 		var currentRowPAD=$(this).parents(".row");
 		currentRowPAD.find(".platform").val(platformAndMY.platform);
 		currentRowPAD.find(".modelYear").val(platformAndMY.MY);
 	});
-  
+
 	$('#staticTorque').on('click',function (){
 		if ($("#staticTorque").is(":checked")){
 			$("#titleEWO").val("NIN - Static Torque Update");
-			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].AddUserKeys("toni.konz@opel.com");
+			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].AddUserKeys("i:0#.w|eur\rzqwqd");
 		}else{
 			$("#titleEWO").val("");
 			$("#nameDRE").val("");
 			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].DeleteProcessedUser();
 		}
 	});
-	
+
 	$(".PAD-analysis" ).on( "change", ".numberPAD", function() {
 		actualSelection=$(this);
 		findEngineersFromPAD(this.value , $(this).parents(".row").find(".workbook").val());
 	});
 }
-/*
-var substringMatcher = function(strs) {
-  return function findMatches(q, cb) {
-	var matches, substringRegex;
 
-	// an array that will be populated with substring matches
-	matches = [];
-
-	// regex used to determine if a string contains the substring `q`
-	substrRegex = new RegExp(q, 'i');
-
-	// iterate through the pool of strings and for any string that
-	// contains the substring `q`, add it to the `matches` array
-	$.each(strs, function(i, str) {
-	  if (substrRegex.test(str)) {
-		matches.push(str);
-	  }
-	});
-	cb(matches);
-  };
-};
-*/
 function validateNumberLength(selectorID){
-	$( "#validationMessage" ).append( "<p clas='errorInfo'>Number EWO has to have 7 (or 10) digits.</p>" );
+	$( "#validationMessage" ).append("<p clas='errorInfo'>Number EWO has to have 7 (or 10) digits.</p>");
 	isWrong(selectorID);
 }
 
@@ -159,15 +133,15 @@ function validateNumber(){
 	$(".alert-danger").hide();
 
 	var selectorID="#numberEWO";
+
 	removerErrorClass(selectorID);
-	
 	if($(selectorID).val().indexOf("(")==-1){
 		if(!isNaN($(selectorID).val())){
 			if($(selectorID).val().length!=7){
 				validateNumberLength(selectorID);
 			}
 		}else{
-			$("#validationMessage").append("<p clas='errorInfo'>Number EWO has to be number.</p>");
+			$("#validationMessage").append("<p clas='errorInfo'>Number EWO has to be number</p>");
 			isWrong(selectorID);
 	}
 	}else{
@@ -181,8 +155,8 @@ function validateNumber(){
 
 function validateTitle(selectorID){
 	removerErrorClass(selectorID);
-	if(!isNaN($(selectorID).val()) ||$(selectorID).val()==""){
-		$("#validationMessage" ).append( "<p clas='errorInfo'>Title shouldn't be only numbers and/or empty </p>");
+	if(!isNaN($(selectorID).val()) || $(selectorID).val()==""){
+		$("#validationMessage" ).append( "<p clas='errorInfo'>Title shouldn't be only numbers and/or empty</p>");
 		isWrong(selectorID);
 	}
 	selectorID = "#peoplePickerDRE_TopSpan_HiddenInput";
@@ -190,29 +164,36 @@ function validateTitle(selectorID){
 }
 function validateDRE(selectorID){
 	removerErrorClass(selectorID);
-	
-	if ($('#peoplePickerDRE_TopSpan_HiddenInput').val() == '[]' || $('#peoplePickerDRE_TopSpan_HiddenInput').val() == ''){
-		$("#validationMessage").append("<p clas='errorInfo'>DRE field is empty </p>");
+
+	if (CheckPeopleField(selectorID)){
+		checkOveralValidation();
+	}
+	else{
+		$("#validationMessage").append("<p clas='errorInfo'>DRE field is empty</p>");
 		isWrong(selectorID);
 	}
-	else {
-		var nameDRE = $.parseJSON($('#peoplePickerDRE_TopSpan_HiddenInput').val());
-		if(nameDRE[0].hasOwnProperty('Description')) checkOveralValidation();
-	}	
 }
 
 function isWrong(ID){
-	$(ID).parent().addClass('has-error');
+	if(Id.indexOf('peoplepicker') > -1){
+		$(ID).parent().parent().addClass('has-error');
+	}
+	else $(ID).parent().addClass('has-error');
 }
 
 function removerErrorClass(ID){
-	var checkError = $(ID).parent().hasClass("has-error") ? true: false;
-	if(checkError) $(ID).parent().removeClass('has-error');
+	if (Id.indexOf('peoplepicker') > -1){
+		$(ID).parent().parent().addClass('has-error');
+	}
+	else{
+		$(ID).parent().removeClass('has-error');
+	}
 }
 
 function isEmpty(str){
 	return !str.replace(/^\s+/g, '').length; 
 }
+
 function checkOveralValidation(){
 	if(checkErrorClass("#numberEWO") || checkErrorClass("#peoplePickerDRE_TopSpan_HiddenInput") || (checkErrorClass("#titleEWO"))){
 		DisplayModalFail("Check correctness!", false);
@@ -231,7 +212,7 @@ function checkOveralValidation(){
 }
 
 function checkErrorClass(ID){
-	if($(ID).parent().hasClass("has-error")){
+	if($(ID).parent().hasClass("has-error") || $(ID).parent().parent().hasClass("has-error"){
 		return true;
 	}
 	return false;
@@ -269,11 +250,12 @@ function checkEWO(listName, EWONo) {
 //************************************************************************
 
 function clonePadSection(counter){
-	var template = null;
-	template = $(".clone").clone().find("input").val("").end();
-	template.removeClass('clone').addClass(counter); //pobranie gl, planer po klasie clone, później sprawdzenie couter czy się zwiekszył ->pobranie
 	var tempInitializePeoplePicker = ['peoplePickerMePlaner' + counter, 'peoplePickerMPDProcessor' + counter, 'peoplePickerMeGL' + counter];
-	
+	var template = null;
+
+	template = $(".clone").clone().find("input").val("").end();
+	template.removeClass('clone').addClass(counter);
+
 	template.find('#peoplePickerMePlaner').attr('id', tempInitializePeoplePicker[0]);
 	template.find('#peoplePickerMPDProcessor').attr('id', tempInitializePeoplePicker[1]);
 	template.find('#peoplePickerMeGL').attr('id', tempInitializePeoplePicker[2]);
@@ -285,9 +267,10 @@ function clonePadSection(counter){
 	initializePeoplePicker(tempInitializePeoplePicker[2], true,'generalInfoOfEWO GL');
 
 }
-//var EngineersForEWO= {'Planer': [], 'processor': [], 'GL': []};
+
 function checkPlatform(book){
 	var infoPlatformMY={};
+
 	switch(book){
 		case "P3/P7":
 			infoPlatformMY.platform="GAMMA P3/P7";
@@ -311,19 +294,50 @@ function checkPlatform(book){
 			infoPlatformMY.MY="2018";
 			break;
 		case "9BUO":
-			infoPlatformMY.platform="GAMMA 9Bxx"
-			infoPlatformMY.MY="2020"
+			infoPlatformMY.platform="GAMMA 9Bxx";
+			infoPlatformMY.MY="2020";
 			break;
 	}
 	return infoPlatformMY;
 }
 
-function findEngineersFromPAD(PAD,platform){
+var person = [];
+function findEngineersFromPAD(PADNo){
+	var PlanerId;
+	if (counter == null || counter = 0)	PlanerId = $('.PAD-analysis > .clone').find(":selected").attr('data-Planer');
+	else $('.PAD-analysis').find(counter -1).hasClass(counter-1);
+	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
+	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PAD&Planners')/items?$select=PAD_x0020_NO,GLId,MPDId,"+PlanerId+"&$top=1000";
+	
+	$.ajax({
+		url: oDataUrl,
+		type: "GET",
+		dataType: "json",
+		}).done( function(data){
+			data = data.value.filter(function(item){
+				if (item["PAD_x0020_NO"] == PAD) return true;
+			});
+			if (data == null || data.length == 0){
+				DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
+				$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
+				$("#validationMessage").show();
+			}
+			else {
+				person.push({'PadNo': data[0]["PAD_x0020_NO"], 'Planer': data[0][PlanerId], 'GL': data[0]["GLId"], 'MPD': data[0]["MPDId"]});
+			}
+		}).fail(function(errMessage){
+			console.log(errMessage);
+		});
+}
 
+RESTFIND('PAD&Planners', 5402000);
+console.log(person);
+
+function findEngineers(PAD,platform){ //change to REST
 	$( "#validationMessage" ).empty();
 	$( "#validationMessage" ).hide();
 	
-	var list= $('.PAD-analysis').find(":selected").attr('data-listName')
+	var list= $('.PAD-analysis').find(":selected").attr('data-listName');
 	engineersForEWO.planner=[];
 	engineersForEWO.processor=[];
 	engineersForEWO.gl=[];
@@ -340,7 +354,6 @@ function findEngineersFromPAD(PAD,platform){
 													  '</View>'
 													  );
 	collListItem = oList.getItems(camlQuery);
-	console.log(collListItem);
 	clientContext.load(collListItem);
 	clientContext.executeQueryAsync(Function.createDelegate(this, this.onPADSuccess), Function.createDelegate(this, this.onPADFail));	
 }
@@ -423,119 +436,3 @@ function iterateOverClass(className){
 		});
 	return validation;
 }
-/*
-function checkIfIsInside(array,element){
-	if (array.length==0) array.push(element);
-	else{
-		if(array.indexOf(element)>=0) {
-			//do nothing
-		}else{
-			array.push(element);
-		}
-	}
-	return array;
-}
-
-function appendSummaryData(selector){
-	console.log(selector);
-	$(selector).each(function(index){
-		if(selector==".planner"){
-			var plannerField=this.value;
-			console.log('plannerField is:' + plannerField);
-			console.log(index);
-				if ((plannerField).indexOf(";")!=-1){
-						var res = pla/nnerField.split(";");
-						for(var i=0;i<res.length;i++){
-							mailReceivers.mail=checkIfIsInside(mailReceivers.mail,res[i]);
-						}
-				}
-				else{
-					mailReceivers.mail=checkIfIsInside(mailReceivers.mail,this.value);
-					}				
-		}
-		else if(selector==".workbook"){
-			platforms=checkIfIsInside(platforms,this.value);
-		}
-		else{
-			var ccField=this.value;
-					if ((ccField).indexOf(";")!=-1){
-						var res = ccField.split(";");
-						for(var i=0;i<res.length;i++){
-							cc.mail=checkIfIsInside(cc.mail,res[i]);
-						}
-					}
-					else{
-						cc.mail=checkIfIsInside(cc.mail,this.value);
-					}
-			}
-		
-	})
-		for(var i=0;i<platforms.length;i++){
-			console.log(platforms[i]);
-			determinePlatformCoordinators(platforms[i])
-		}
-};
-
-*/
-
-function SetPeopleField(peoplePickerElementId) {
-	var peoplePickerElementId = SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerElementId];
-	var DefferSetPeopleFiled = new $.Deferred();
-	var users = peoplePickerElementId.GetAllUserInfo();
-	var userMail = [];
-	var ReturnValue = null;
-	
-	$.each(users, function(index, element){
-		 $.when(GetUserNameToSetPeopleField(element.Key, DefferSetPeopleFiled)).done(function(data){
-			$.map(data, function(n){
-				userMail.push(SP.FieldUserValue.fromUser(n.Email));
-				if (userMail.length == users.length) DefferSetPeopleFiled.resolve(userMail);
-			});
-		});
-	});
-
-	DefferSetPeopleFiled.done(function(userMail){
-		ReturnValue = userMail;
-	}).fail(function(){
-		DisplayModalFail('User not find', false);
-	});
-
-	return ReturnValue;
-}
-function GetUserNameToSetPeopleField(userName, DefferSetPeopleFiled) {
-		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
-		var accountName = userName;
-		return $.ajax({
-					url: siteUrl + "/_api/web/siteusers(@v)?@v='" + 
-						encodeURIComponent(accountName) + "'",
-					method: "GET",
-					async: false,
-					headers: { "Accept": "application/json; odata=verbose" },
-					success: function (data) {
-						return data.d.Emai;
-					},
-					error: function (data) {
-						console.log(JSON.stringify(data));
-						return DefferSetPeopleFiled.reject();
-					}
-				});
-};
-
-function GetUserNameToSetPeoplePicker(userName) {
-		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
-		var accountName = userName;
-		return $.ajax({
-					url: siteUrl + "/_api/web/siteusers(@v)?@v='" + 
-						encodeURIComponent(accountName) + "'",
-					method: "GET",
-					async: false,
-					headers: { "Accept": "application/json; odata=verbose" },
-					success: function (data) {
-						return data.d.Emai;
-					},
-					error: function (data) {
-						console.log(JSON.stringify(data));
-						return null;
-					}
-				});
-};
