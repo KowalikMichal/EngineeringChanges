@@ -1,9 +1,4 @@
-//*************************************************************************
-//********************BASIC************************************************
-//*************************************************************************
-
 var engineersForEWO={planner:[],processor:[],gl:[],list:""};
-var actualSelection;
 //used for final engineers matching
 var mailReceivers={mail:[]}; //possible to add name
 var cc={mail:[]};//possible to add name
@@ -113,9 +108,31 @@ function readyFunction(){
 		}
 	});
 
-	$(".PAD-analysis" ).on( "change", ".numberPAD", function() {
-		actualSelection=$(this);
-		findEngineersFromPAD(this.value , $(this).parents(".row").find(".workbook").val());
+	$(".PAD-analysis" ).on( "chnage", ".numberPAD", function() {
+		if ($(this).closest('.section').find(':selected').length == 0) return;
+
+		var PeeopleKey = {'Planer': [], 'MPD': [], 'GL': []}; 
+		var PeoplePikcerWorkbook = [];
+
+		var padPersonId = findEngineersFromPAD(this.value , $(this).closest('.section').find(':selected').attr('data-Workbook'));
+
+		if (padPersonId == null || padPersonId.length == 0) return;
+
+		$(this).closest('.section').find("div[id*='peoplePicker']").map(function(index, element){
+			if (element.id.indexOf('_TopSpan') > -1 && element.id.indexOf('AutoFillDiv') == -1) PeoplePikcerWorkbook.push(element.id);
+		});
+
+		if (CheckPeopleField(PeoplePikcerWorkbook[0])) SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[0]].DeleteProcessedUser();
+		if (CheckPeopleField(PeoplePikcerWorkbook[1])) SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[1]].DeleteProcessedUser();
+		if (CheckPeopleField(PeoplePikcerWorkbook[2])) SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[2]].DeleteProcessedUser();
+
+		$.each(padPersonId[0].Planer, function(index, element){$.when(GetUserKey(element)).done(function(data){PeeopleKey.Planer.push(data.LoginName);});});
+		$.each(padPersonId[0].MPD, function(index, element){$.when(GetUserKey(element)).done(function(data){PeeopleKey.MPD.push(data.LoginName);});});
+		$.each(padPersonId[0].GL, function(index, element){$.when(GetUserKey(element)).done(function(data){PeeopleKey.GL.push(data.LoginName);});});
+
+		SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[0]].AddUserKeys(PeeopleKey.Planer.join(";"));
+		SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[1]].AddUserKeys(PeeopleKey.MPD.join(";"));
+		SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[2]].AddUserKeys(PeeopleKey.GL.join(";"));
 	});
 }
 
@@ -143,12 +160,13 @@ function validateNumber(){
 		}else{
 			$("#validationMessage").append("<p clas='errorInfo'>Number EWO has to be number</p>");
 			isWrong(selectorID);
+		}
 	}
-	}else{
+	else{
 		if($(selectorID).val().length!=10){
 			validateNumberLength(selectorID);
 		}
- }
+ 	}
 	selectorID="#titleEWO";
 	validateTitle(selectorID);	
 }
@@ -162,6 +180,7 @@ function validateTitle(selectorID){
 	selectorID = "#peoplePickerDRE_TopSpan_HiddenInput";
 	validateDRE(selectorID);
 }
+
 function validateDRE(selectorID){
 	removerErrorClass(selectorID);
 
@@ -190,10 +209,6 @@ function removerErrorClass(ID){
 	}
 }
 
-function isEmpty(str){
-	return !str.replace(/^\s+/g, '').length; 
-}
-
 function checkOveralValidation(){
 	if(checkErrorClass("#numberEWO") || checkErrorClass("#peoplePickerDRE_TopSpan_HiddenInput") || (checkErrorClass("#titleEWO"))){
 		DisplayModalFail("Check correctness!", false);
@@ -203,11 +218,6 @@ function checkOveralValidation(){
 		$(".PAD-analysis").show();
 		$(".summaryBtn").show();
 		if($("#infoVAA").is(":checked")) $(".VAA-info").show();
-
-		compilane.EWONo = $('#numberEWO').val();
-		compilane.Title = $('#titleEWO').val();
-		compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
-		compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
 	}
 }
 
@@ -265,7 +275,6 @@ function clonePadSection(counter){
 	initializePeoplePicker(tempInitializePeoplePicker[0], true,'generalInfoOfEWO planner');
 	initializePeoplePicker(tempInitializePeoplePicker[1], true,'generalInfoOfEWO processor');
 	initializePeoplePicker(tempInitializePeoplePicker[2], true,'generalInfoOfEWO GL');
-
 }
 
 function checkPlatform(book){
@@ -301,21 +310,19 @@ function checkPlatform(book){
 	return infoPlatformMY;
 }
 
-var person = [];
-function findEngineersFromPAD(PADNo){
-	var PlanerId;
-	if (counter == null || counter = 0)	PlanerId = $('.PAD-analysis > .clone').find(":selected").attr('data-Planer');
-	else $('.PAD-analysis').find(counter -1).hasClass(counter-1);
+function findEngineersFromPAD(PADNo, ColumWorkbook){
+	var person = [];
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
-	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PAD&Planners')/items?$select=PAD_x0020_NO,GLId,MPDId,"+PlanerId+"&$top=1000";
-	
+	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PAD&Planners')/items?$select=PAD_x0020_NO,GLId,MPDId,"+ColumWorkbook+"&$top=1000";
+
 	$.ajax({
 		url: oDataUrl,
+		async: false,
 		type: "GET",
 		dataType: "json",
 		}).done( function(data){
 			data = data.value.filter(function(item){
-				if (item["PAD_x0020_NO"] == PAD) return true;
+				if (item["PAD_x0020_NO"] == PADNo) return true;
 			});
 			if (data == null || data.length == 0){
 				DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
@@ -323,98 +330,38 @@ function findEngineersFromPAD(PADNo){
 				$("#validationMessage").show();
 			}
 			else {
-				person.push({'PadNo': data[0]["PAD_x0020_NO"], 'Planer': data[0][PlanerId], 'GL': data[0]["GLId"], 'MPD': data[0]["MPDId"]});
+				person.push({'PadNo': data[0]["PAD_x0020_NO"], 'Planer': data[0][ColumWorkbook], 'GL': data[0]["GLId"], 'MPD': data[0]["MPDId"]});
 			}
 		}).fail(function(errMessage){
 			console.log(errMessage);
 		});
-}
 
-RESTFIND('PAD&Planners', 5402000);
-console.log(person);
-
-function findEngineers(PAD,platform){ //change to REST
-	$( "#validationMessage" ).empty();
-	$( "#validationMessage" ).hide();
-	
-	var list= $('.PAD-analysis').find(":selected").attr('data-listName');
-	engineersForEWO.planner=[];
-	engineersForEWO.processor=[];
-	engineersForEWO.gl=[];
-	engineersForEWO.list="";
-	
-	engineersForEWO.list=list;
-	var clientContext = SP.ClientContext.get_current();
-	var oList = clientContext.get_web().get_lists().getByTitle('PAD&Planners'); 
-	var camlQuery = new SP.CamlQuery();
-
-								 camlQuery.set_viewXml(
-													  '<View><Query><Where><Eq><FieldRef Name=\'PAD_x0020_NO\'/>' +
-													  '<Value Type=\'Text\'>' + PAD + '</Value></Eq></Where></Query>' +
-													  '</View>'
-													  );
-	collListItem = oList.getItems(camlQuery);
-	clientContext.load(collListItem);
-	clientContext.executeQueryAsync(Function.createDelegate(this, this.onPADSuccess), Function.createDelegate(this, this.onPADFail));	
-}
-
-function onPADSuccess(){
-	var list=engineersForEWO.list;
-	var listItemInfo = '';
-	var listItemEnumerator = collListItem.getEnumerator();
-
-	while (listItemEnumerator.moveNext()){
-		var oListItem = listItemEnumerator.get_current();
-		if(!oListItem.get_item(list)){
-			DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
-			$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
-			$("#validationMessage").show();
-			break;
-		}
-
-		var plannerMail=oListItem.get_item(list)[0].$6_2;	
-		var processorMail=oListItem.get_item('MPD')[0].$6_2;
-		var glMail=oListItem.get_item('GL')[0].$6_2;
-
-		EngineersForEWO.Typical
-		
-		if(oListItem.get_item(list).length==2){
-			var plannerMail2=oListItem.get_item(list)[1].$6_2;
-			var glMail2=oListItem.get_item('GL')[1].$6_2;
-		}
-	}		
-	
-	engineersForEWO.planner.push(plannerMail);
-	engineersForEWO.processor.push(processorMail);
-	engineersForEWO.gl.push(glMail);
-			
-	if(plannerMail2) engineersForEWO.planner.push(plannerMail2);
-	if(glMail2) engineersForEWO.gl.push(glMail2)
-	
-	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMePlaner'+"_TopSpan"].AddUserKeys(engineersForEWO.planner.join(";"));
-	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMPDProcessor'+"_TopSpan"].AddUserKeys(engineersForEWO.processor.join(";"));
-	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerMeGL'+"_TopSpan"].AddUserKeys(engineersForEWO.gl.join(";"));
-}
-
-function onPADFail(sender, args){
-	DisplayModalFail('Request failed. ' + args.get_message() + '\n' + args.get_stackTrace(), false);
+	return person;
 }
 
 function secondValidation(){
-	var validation2=true;
+	$('.has-error').removeClass('has-error');
 
-	if($("#staticTorque").is(":checked")){
-		var arrWithClass =[".modelYear",".workbook",".platform"];
-	}else{
-		var arrWithClass =[".modelYear",".workbook",".platform",".planner",".processor",".GL"];
+	$.each($('.PAD-analysis').children('div'), function(index, element){
+		$.map($(this).find("div[id*='peoplePicker']"), function(element){
+			if (element.id.indexOf('_TopSpan') > -1 && element.id.indexOf('AutoFillDiv') == -1){
+				if (!CheckPeopleField(element.id)){
+					$('#'+element.id).parent().parent().addClass('has-error');
+				}
+			}
+		});
+		if($('.workbook', this).find(':selected').val() == 'Please pick workbook') isWrong($('.workbook', this));
+		if(~~$('.modelYear', this).val() == 0) isWrong($('.modelYear', this));
+		if($('.platform', this).val() == '') isWrong($('.platform', this));
+		if(~~$('.numberPAD', this).val() == 0) isWrong($('.numberPAD', this));
+	});
+
+	if($('.VAA-info').is(':visible')){
+		if($('.type').find('input:checkbox:checked').length == 0){$('.type').addClass('has-error');}
+		if($('.plant').find('input:checkbox:checked').length == 0){$('.plant').addClass('has-error');}
 	}
-	for (var i=0;i<arrWithClass.length;i++){
-			validation2 = iterateOverClass(arrWithClass[i]);
-		if (!validation2){
-			return false;
-		}
-	}
-	if(validation2){
+
+	if($('.has-error').length == 0){
 		$(".summaryBtn").show();
 		$(".summaryInfo").show();
 		$(".createBtn").show();
@@ -422,17 +369,4 @@ function secondValidation(){
 		displaySummaryMails();
 		createMailToVAA();
 	}
-}
-
-function iterateOverClass(className){
-	var validation=true;
-	$(className).each(function(){
-			if(this.value!=""){ 
-			}else{
-				DisplayModalFail("Please fulfill necessary data" ,false);
-				validation=false;
-				return false;
-			}
-		});
-	return validation;
 }

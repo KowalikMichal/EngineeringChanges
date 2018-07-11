@@ -109,16 +109,16 @@
 						<label for="usr">Book:</label>
 						<select type="text" class="form-control padInfo workbook">
 							 <option value="Please pick workbook" selected disabled></option>
-							 <option value="Z" data-listName="_x0045_2" data-Planer="OData__x0045_2Id">Z</option>
-							 <option value="P3/P7" data-listName="P7_x002f_P3" data-Planer="P7_x002f_P3Id">P3/P7</option>
-							 <option value="J" data-listName="Gamma" data-Planer="">J</option>
-							 <option value="0X" data-listName="Corsa" data-Planer="CorsaId">0X</option>
-							 <option value="0M" data-listName="Adam" data-Planer="AdamId">0M</option>
-							 <option value="0S" data-listName="_x0050_2" data-Planer="OData__x0050_2Id">0S</option>
-							 <option value="P(all plants)" data-listName="P_x0020_all_x0020_plants" data-Planer="P_x0020_all_x0020_plantsId">P(all plants)</option>
-							 <option value="0W" data-listName="Cascada" data-Planer="CascadaId">0W</option>
-							 <option value="B" data-listName="D2xx" data-Planer="D2xxId">B</option>
-							 <option value="9BUO" data-listName="" data-Planer="OData__x0039_BUOId">9BUO</option>
+							 <option value="Z" data-listName="_x0045_2" data-Workbook="OData__x0045_2Id">Z</option>
+							 <option value="P3/P7" data-listName="P7_x002f_P3" data-Workbook="P7_x002f_P3Id">P3/P7</option>
+							 <option value="J" data-listName="Gamma" data-Workbook="">J</option>
+							 <option value="0X" data-listName="Corsa" data-Workbook="CorsaId">0X</option>
+							 <option value="0M" data-listName="Adam" data-Workbook="AdamId">0M</option>
+							 <option value="0S" data-listName="_x0050_2" data-Workbook="OData__x0050_2Id">0S</option>
+							 <option value="P(all plants)" data-listName="P_x0020_all_x0020_plants" data-Workbook="P_x0020_all_x0020_plantsId">P(all plants)</option>
+							 <option value="0W" data-listName="Cascada" data-Workbook="CascadaId">0W</option>
+							 <option value="B" data-listName="D2xx" data-Workbook="D2xxId">B</option>
+							 <option value="9BUO" data-listName="" data-Workbook="OData__x0039_BUOId">9BUO</option>
 							 <!-- GammaId -->
 						</select>  
 					</div>
@@ -145,22 +145,19 @@
 				<div class="col-sm-3">
 					<div class="form-group padInfo">
 						<label for="usr">ME Planner:</label>
-						<div id="peoplePickerMePlaner">	
-						</div>
+						<div id="peoplePickerMePlaner"></div>
 					</div>
 				</div>
 				<div class="col-sm-3">
 					<div class="form-group padInfo">
 						<label for="usr">MPD Processor:</label>
-						<div id="peoplePickerMPDProcessor">
-						</div>
+						<div id="peoplePickerMPDProcessor"></div>
 					</div>
 				</div>
 				<div class="col-sm-3">
 					<div class="form-group padInfo">
 						<label for="usr">ME GL:</label>
-						<div id="peoplePickerMeGL">
-						</div>
+						<div id="peoplePickerMeGL"></div>
 					</div>
 				</div>
 				<div class="col-sm-1">
@@ -177,7 +174,8 @@
 			<h3 class="center-block">Information about VAA</h3>
 			<div class="row section">
 				<div class="col-sm-6">
-					<div class="form-group infoVAA checkbox">
+					<div class="form-group infoVAA checkbox type">
+						<label for="usr"><b>VAA type:<b></label>
 						<label><input type="checkbox" value="VRL" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRL</label>
 						<label><input type="checkbox" value="VRM" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRM</label>
 						<label><input type="checkbox" value="VRN" class="frontAxle"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>VRN</label>
@@ -186,7 +184,7 @@
 					</div>
 				</div>
 				<div class="col-sm-6">
-					<div class="form-group infoVAA checkbox">
+					<div class="form-group infoVAA checkbox plant">
 						<label for="usr"><b>VAA plant:<b></label>
 						<label><input type="checkbox" value="Gliwice" class="plantVAA"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>Gliwice</label>
 						<label><input type="checkbox" value="E.Port" class="plantVAA"><span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span>E.Port</label>

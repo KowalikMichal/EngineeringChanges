@@ -1,6 +1,5 @@
 ///variable 
 var engineersForEWO={planner:[],processor:[],gl:[],list:""};
-var actualSelection;
 //used for final engineers matching
 var mailReceivers={mail:[]}; //possible to add name
 var cc={mail:[]};//possible to add name

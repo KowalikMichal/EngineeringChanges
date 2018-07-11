@@ -129,7 +129,7 @@ function GetUserNameToSetPeopleField(userName, DefferSetPeopleFiled) {
 					},
 					error: function (data) {
 						console.log(JSON.stringify(data));
-						return DefferSetPeopleFiled.reject();
+						return DefferSetPeopleFiled.reject(); 
 					}
 				});
 }
@@ -153,15 +153,6 @@ function GetUserNameToSetPeoplePicker(userName) {
 				});
 }
 
-function CheckPeopleField(peoplePicker_TopSpan_HiddenInput){
-		var nameDRE = $.parseJSON($(peoplePicker_TopSpan_HiddenInput).val());
-
-		if (!(nameDRE.length == 0 || nameDRE == null)){
-			if(nameDRE[0].hasOwnProperty('Description')) return true;
-			else return false;
-		}
-		else return false;
-}
 
 function determinePlatformCoordinators(workbook){
 	var mails=[];
@@ -196,3 +187,31 @@ function determinePlatformCoordinators(workbook){
 			compilane.CC.push(SP.FieldUserValue.fromUser(mails[index]));	
 		}
 }
+
+function GetUserKey(ID){
+	var returnUserKey;
+	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
+	var oDataUrl = siteUrl + "/_api/web/getuserbyid("+ID+")";
+
+	return $.ajax({
+		url: oDataUrl,
+		type: "GET",
+		dataType: "json",
+		}).done( function(data){
+			data.LoginName;
+		}).fail(function(errMessage){
+			console.log(errMessage);
+		});
+}
+
+function CheckPeopleField(peoplePicker_TopSpan_HiddenInput){
+	try{
+		var PeoplePicker = SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePicker_TopSpan_HiddenInput];
+		if (PeoplePicker.GetAllUserKeys() == "" || PeoplePicker.GetAllUserKeys() == undefined) return false;
+		else return true;	
+	}
+	catch(error){
+		return false;
+	}
+}
+

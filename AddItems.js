@@ -47,8 +47,12 @@ function DisplayModalFail(error, reload){
 
 function addItemsToSharePoint(){
 	DisplayModalWorking();
-	//SetPeopleField
+	//set all items
 
+	compilane.EWONo = $('#numberEWO').val();
+	compilane.Title = $('#titleEWO').val();
+	compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
+	compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
 
 
 	addToEWOList();
