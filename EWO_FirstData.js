@@ -366,7 +366,28 @@ function secondValidation(){
 		$(".summaryInfo").show();
 		$(".createBtn").show();
 
-		displaySummaryMails();
+		displaySummaryPeople(); //displaySummaryPeople
+		//displaySummaryMails(); //displaySummaryPeople
 		createMailToVAA();
 	}
+}
+
+function displaySummaryPeople(){
+	var PlatformCoordinators = {'Id': '', 'Email': [], 'ID': []}; 
+	peoplePickermailVAACoordinators();
+
+	$.each($('.PAD-analysis').children('div'), function(index, element){$.when(CheckPlaform($('.workbook', this).val())).done(function(data){PlatformCoordinators.Id += (data.value[0].PlatformCoordinatorsId)});});
+	PlatformCoordinators.ID = PlatformCoordinators.Id.split(',');
+	$.each(PlatformCoordinators.ID, function(index, element){$.when(GetUserKey(element)).done(function(data){PlatformCoordinators.Email.push(data.LoginName);});});
+
+	SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].AddUserKeys(PlatformCoordinators.Email.join(";"));
+
+	$.each(SPClientPeoplePicker.SPClientPeoplePickerDict, function(index, element){
+		if (element.TopLevelElementId.indexOf('MePlaner') > -1){
+			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].AddUserKeys(element.GetAllUserKeys());
+		}
+		if (element.TopLevelElementId.indexOf('MPDProcessor') > -1 || element.TopLevelElementId.indexOf('peoplePickerMeGL') > -1){
+			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].AddUserKeys(element.GetAllUserKeys());
+		}
+	});
 }

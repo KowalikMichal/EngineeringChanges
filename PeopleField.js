@@ -73,23 +73,6 @@ function appendSummaryMails(peoplePickerElementId_ToSpan, appendTo) {
 	});
 }
 
-function checkIfVAANeedsToBeSend(){
-	compilane.VAACoordinators = [];
-	if($("#infoVAA").is(":checked")){
-		var mails = [];
-		$('#peoplePickermailVAACoordinators').parent().removeAttr('hidden');
-
-		if($(".frontAxle").is(":checked")) mails.push("sebastian.maier@opel.com");
-		if($(".rearAxle").is(":checked")) mails.push("franz.sabo@opel.com");
-		if($(".plantVAA").is(":checked")) mails.push("jacek.pedrycz@opel.com");
-
-		for (var index in mails){
-			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys(mails[index]);
-			compilane.VAACoordinators.push(SP.FieldUserValue.fromUser(mails[index]));	
-		}
-	}
-}
-
 function SetPeopleField(peoplePickerElementId) {
 	var DefferSetPeopleFiled = new $.Deferred();
 
@@ -153,7 +136,7 @@ function GetUserNameToSetPeoplePicker(userName) {
 				});
 }
 
-
+/*
 function determinePlatformCoordinators(workbook){
 	var mails=[];
 	switch(workbook){
@@ -166,8 +149,8 @@ function determinePlatformCoordinators(workbook){
 		case "J": 
 				mails=["guido.wagner@opel.com","cristina.gonzalez.alcala@opel.com"];
 				break;
-		/*case "0M":
-		case "0X":*/
+		case "0M":
+		case "0X":
 		case "0S":
 				mails=["cristina.gonzalez.alcala@opel.com","bernd.langer@opel.com","guido.wagner@opel.com"];
 				 break;
@@ -187,6 +170,11 @@ function determinePlatformCoordinators(workbook){
 			compilane.CC.push(SP.FieldUserValue.fromUser(mails[index]));	
 		}
 }
+*/
+
+//*************************************************************************
+//********************used function ******************************
+//*************************************************************************	
 
 function GetUserKey(ID){
 	var returnUserKey;
@@ -195,6 +183,7 @@ function GetUserKey(ID){
 
 	return $.ajax({
 		url: oDataUrl,
+		async: false,
 		type: "GET",
 		dataType: "json",
 		}).done( function(data){
@@ -214,4 +203,32 @@ function CheckPeopleField(peoplePicker_TopSpan_HiddenInput){
 		return false;
 	}
 }
+function CheckPlaform(Platform) {
+	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
+	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PlatformCoordinators')/items?$&expand=PlatformCoordinators&$filter=(Platform eq'"+ Platform +"')";
+	
+	return $.ajax({
+		url: oDataUrl,
+		async: false,
+		type: "GET",
+		dataType: "json",
+		}).done( function(data){
+			data.value[0].PlatformCoordinatorsId;
+			console.log('done');
+		}).fail(function(errMessage){
+			console.log(errMessage);
+		});
+}
 
+function peoplePickermailVAACoordinators(){
+	var mails = [];
+	$('#peoplePickermailVAACoordinators').parent().removeAttr('hidden');
+
+	if($(".frontAxle").is(":checked")) mails.push("sebastian.maier@opel.com");
+	if($(".rearAxle").is(":checked")) mails.push("franz.sabo@opel.com");
+	if($(".plantVAA").is(":checked")) mails.push("jacek.pedrycz@opel.com");
+
+	for (var index in mails){
+		SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys(mails[index]);
+	}
+}

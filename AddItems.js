@@ -46,6 +46,8 @@ function DisplayModalFail(error, reload){
 }
 
 function addItemsToSharePoint(){
+	if($('.VAA-info').is(':visible')) CompilaneVAA()
+
 	DisplayModalWorking();
 	//set all items
 
@@ -126,3 +128,5 @@ function createMailToVAA(){
 		wndMail.close();    
 	}
 }
+
+
