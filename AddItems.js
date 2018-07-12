@@ -1,8 +1,8 @@
-var EWODeferred = new $.Deferred();
+// var EWODeferred = new $.Deferred();
 
-var VAADeferred = new $.Deferred();
-var ApprovalDeferred = new $.Deferred();
-var AdministratorDeferred = new $.Deferred();
+// var VAADeferred = new $.Deferred();
+// var ApprovalDeferred = new $.Deferred();
+// var AdministratorDeferred = new $.Deferred();
 
 
 function DisplayModalWorking(){
@@ -55,7 +55,7 @@ function addItemsToSharePoint(){
 		compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
 		compilane.DRE = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys().split(';');
 		compilane.Workbook = $('.workbook').find(':selected').val();
-		compilane.MY	$('.modelYear').val();
+		compilane.MY = ('.modelYear').val();
 		compilane.Platform = $('.platform').val();
 		compilane.PADNo = $('.numberPAD').val();
 		compilane.TO = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].GetAllUserKeys().split(';');

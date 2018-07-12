@@ -1,16 +1,16 @@
-var engineersForEWO={planner:[],processor:[],gl:[],list:""};
+// var engineersForEWO={planner:[],processor:[],gl:[],list:""};
 //used for final engineers matching
-var mailReceivers={mail:[]}; //possible to add name
-var cc={mail:[]};//possible to add name
+// var mailReceivers={mail:[]}; //possible to add name
+// var cc={mail:[]};//possible to add name
 
-var platforms=[]; //actually workbookw
-var platformCoordinators=[]; //guys for given workbooks
+// var platforms=[]; //actually workbookw
+// var platformCoordinators=[]; //guys for given workbooks
 
-var plannersAndGL={planner:[],gl:[]};
+// var plannersAndGL={planner:[],gl:[]};
 
-var deferred = new $.Deferred(); //delete after optymalization -> used in addToEwo
+// var deferred = new $.Deferred(); //delete after optymalization -> used in addToEwo
 var counter = 0;
-var compilane= {'Planner': [], 'Processor': [],  'GL': [],'VAACoordinators': []};
+var compilane= {};
 
 $(function(){
 	SP.SOD.executeFunc('sp.js', 'SP.ClientContext',function(){
@@ -62,11 +62,7 @@ function readyFunction(){
 
 	$("#checkGeneralData").on('click',function(){ 
 		hidePadData();
-		validateNumber();	
-	});
-
-	$("#addDRE").on('click', function(){ 
-		getDataToAddDRE($("#nameDRE").val(),$("#mailDRE").val());
+		validation();	
 	});
 
 	$('body').on('click', '.addSection', function(){
@@ -100,7 +96,7 @@ function readyFunction(){
 	$('#staticTorque').on('click',function (){
 		if ($("#staticTorque").is(":checked")){
 			$("#titleEWO").val("NIN - Static Torque Update");
-			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].AddUserKeys("i:0#.w|eur\rzqwqd");
+			SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].AddUserKeys("i:0#.w|eur\\rzqwqd");
 		}else{
 			$("#titleEWO").val("");
 			$("#nameDRE").val("");
@@ -108,12 +104,12 @@ function readyFunction(){
 		}
 	});
 
-	$(".PAD-analysis" ).on( "chnage", ".numberPAD", function() {
+	$(".PAD-analysis" ).on("change", ".numberPAD", function() {
 		if ($(this).closest('.section').find(':selected').length == 0) return;
 
 		var PeeopleKey = {'Planer': [], 'MPD': [], 'GL': []}; 
 		var PeoplePikcerWorkbook = [];
-
+		
 		var padPersonId = findEngineersFromPAD(this.value , $(this).closest('.section').find(':selected').attr('data-Workbook'));
 
 		if (padPersonId == null || padPersonId.length == 0) return;
@@ -136,96 +132,12 @@ function readyFunction(){
 	});
 }
 
-function validateNumberLength(selectorID){
-	$( "#validationMessage" ).append("<p clas='errorInfo'>Number EWO has to have 7 (or 10) digits.</p>");
-	isWrong(selectorID);
-}
-
 //*************************************************************************
 //********************Fields easy validation ******************************
 //*************************************************************************	
-
-function validateNumber(){
-	$(".alert-danger").children().remove();
-	$(".alert-danger").hide();
-
-	var selectorID="#numberEWO";
-
-	removerErrorClass(selectorID);
-	if($(selectorID).val().indexOf("(")==-1){
-		if(!isNaN($(selectorID).val())){
-			if($(selectorID).val().length!=7){
-				validateNumberLength(selectorID);
-			}
-		}else{
-			$("#validationMessage").append("<p clas='errorInfo'>Number EWO has to be number</p>");
-			isWrong(selectorID);
-		}
-	}
-	else{
-		if($(selectorID).val().length!=10){
-			validateNumberLength(selectorID);
-		}
- 	}
-	selectorID="#titleEWO";
-	validateTitle(selectorID);	
-}
-
-function validateTitle(selectorID){
-	removerErrorClass(selectorID);
-	if(!isNaN($(selectorID).val()) || $(selectorID).val()==""){
-		$("#validationMessage" ).append( "<p clas='errorInfo'>Title shouldn't be only numbers and/or empty</p>");
-		isWrong(selectorID);
-	}
-	selectorID = "#peoplePickerDRE_TopSpan_HiddenInput";
-	validateDRE(selectorID);
-}
-
-function validateDRE(selectorID){
-	removerErrorClass(selectorID);
-
-	if (CheckPeopleField(selectorID)){
-		checkOveralValidation();
-	}
-	else{
-		$("#validationMessage").append("<p clas='errorInfo'>DRE field is empty</p>");
-		isWrong(selectorID);
-	}
-}
-
 function isWrong(ID){
-	if(Id.indexOf('peoplepicker') > -1){
-		$(ID).parent().parent().addClass('has-error');
-	}
-	else $(ID).parent().addClass('has-error');
-}
-
-function removerErrorClass(ID){
-	if (Id.indexOf('peoplepicker') > -1){
-		$(ID).parent().parent().addClass('has-error');
-	}
-	else{
-		$(ID).parent().removeClass('has-error');
-	}
-}
-
-function checkOveralValidation(){
-	if(checkErrorClass("#numberEWO") || checkErrorClass("#peoplePickerDRE_TopSpan_HiddenInput") || (checkErrorClass("#titleEWO"))){
-		DisplayModalFail("Check correctness!", false);
-		$(".alert-danger").show();
-	}
-	else{
-		$(".PAD-analysis").show();
-		$(".summaryBtn").show();
-		if($("#infoVAA").is(":checked")) $(".VAA-info").show();
-	}
-}
-
-function checkErrorClass(ID){
-	if($(ID).parent().hasClass("has-error") || $(ID).parent().parent().hasClass("has-error"){
-		return true;
-	}
-	return false;
+	console.log(ID);
+	$(ID).parent().addClass('has-error');
 }
 
 function hidePadData(){
@@ -233,6 +145,42 @@ function hidePadData(){
 		// element is hidden do nothing
 	}else{
 		$(".PAD-analysis").hide();
+	}
+}
+
+function validation(){
+	$('#validationMessage').children().remove();
+	$('.has-error').removeClass('has-error');
+
+	if (!CheckPeopleField('peoplePickerDRE_TopSpan')){
+		$('#peoplePickerDRE').parent().parent().addClass('has-error');
+	}
+
+	$('input[type="text"]').filter('[required]:visible').each(function(index, element){
+		if (IsStrNullOrEmpty(element.value)){
+			DisplayModalFail("Empty Fields!", false);
+			return;
+		}
+		if (!(IsStrNullOrEmpty(element.value))) {
+			if (element.id == 'numberEWO'){
+				if (!(element.value.length == 7 || (element.value.length == 10 && element.value.indexOf(")") !== -1) && element.value.indexOf("(") !== -1)){
+					isWrong('#' + element.id);
+					$("#validationMessage" ).append( "<p clas='errorInfo'>EWO Number shouldn't be only numbers and/or empty</p>");
+				}
+			}
+			if (element.id == 'titleEWO' && !isNaN(element.value)){
+				isWrong('#' + element.id);
+				$("#validationMessage" ).append( "<p clas='errorInfo'>Title shouldn't be only numbers and/or empty</p>");
+			}
+		}
+	});
+	if ($('#validationMessage').children().length > 0 ) $(".alert-danger").show();
+
+	if($('.has-error').length == 0){
+		$(".alert-danger").hide();
+		$(".PAD-analysis").show();
+		$(".summaryBtn").show();
+		if ($("#infoVAA").is(":checked")) $(".VAA-info").show();
 	}
 }
 
@@ -251,7 +199,7 @@ function checkEWO(listName, EWONo) {
 		}).done( function(data){
 			if(data.value.length > 0) DisplayModalFail('EWO number exist on database!', false);
 		}).fail(function(errMessage){
-			DisplayModalFail('Error in checkEWO: '+errMessage, false);
+			console.log('Error in checkEWO: '+errMessage);
 		});
 }
 

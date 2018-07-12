@@ -14,8 +14,8 @@
 	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/Scripts/jquery.SPServices.min.js"></script>
 	
 	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/EWO_FirstData.js"></script>
-	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/AddItems.js"></script>
 	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/PeopleField.js"></script>
+	<script src="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/AddItems.js"></script>
 
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://share.opel.com/sites/MEACEWO/SiteAssets/EWO_Form/Style/style.css">
@@ -51,13 +51,13 @@
 				<div class="col-sm-4">
 					<div class="form-group">
 						<label for="usr">EWO Number:</label>
-						<input type="text" class="form-control generalInfoOfEWO" id="numberEWO">
+						<input type="text" class="form-control generalInfoOfEWO" id="numberEWO" required>
 					</div>
 				</div>
 				<div class="col-sm-4">
 					<div class="form-group">
 						<label for="usr">EWO Title:</label>
-						<input type="text" class="form-control generalInfoOfEWO" id="titleEWO">
+						<input type="text" class="form-control generalInfoOfEWO" id="titleEWO" required>
 					</div>
 				</div>
 				<div class="col-sm-4">
@@ -222,7 +222,7 @@
 						<div id="peoplePickermailPlatformCoordinators"></div>
 					</div>
 				</div>
-				<div class="col-sm-12">
+				<div class="col-sm-12" hidden="hidden">
 					<div class="form-group" hidden="hidden">
 						<label for="usr">VAA coordinators</label>
 						<div id="peoplePickermailVAACoordinators"></div>
