@@ -45,40 +45,49 @@ function DisplayModalFail(error, reload){
 	$('#ModalInfo').modal({backdrop: "static"})
 }
 
+var DeferredList = {'EwoListDeferred': new $.Deferred(), 'VAAListDeferred': new $.Deferred()}
+
 function addItemsToSharePoint(){
-	if($('.VAA-info').is(':visible')) CompilaneVAA()
-
 	DisplayModalWorking();
-	//set required
+	try{
+		//set main
+		compilane.EWONo = $('#numberEWO').val();
+		compilane.Title = $('#titleEWO').val();
+		compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
+		compilane.DRE = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys().split(';');
+		compilane.Workbook = $('.workbook').find(':selected').val();
+		compilane.MY	$('.modelYear').val();
+		compilane.Platform = $('.platform').val();
+		compilane.PADNo = $('.numberPAD').val();
+		compilane.TO = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].GetAllUserKeys().split(';');
+		compilane.CC = $.merge(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].GetAllUserKeys().split(';'), SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].GetAllUserKeys().split(';'))
+			//set additional
+			compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
+			compilane.AttachmentLink = ($('.attachments').val() == '') ? 'No Attachments available': $('.attachments').val();
+			//VAA
+			if($('.VAA-info').is(':visible')){
+				compilane.SubType = 'Static/Controller Torque';
+				$('.VAA-info input:checked').each(function(index,element){return element.value;});
+				addToVAAList();
+			}
+			else{
+				DeferredList.VAAListDeferred.resolve();
+			}
 
-	compilane.EWONo = $('#numberEWO').val();
-	compilane.Title = $('#titleEWO').val();
-	compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
-	compilane.DRE = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys().split(';');
-	compilane.Platform = $('.workbook').find(':selected').val();
-	compilane.Platform	$('.modelYear').val();
-	compilane.MY = $('.platform').val();
-	compilane.PADNo = $('.numberPAD').val();
-
-	compilane.Platfor = 
-
-	//set additional
-	compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
-
-
-	addToEWOList();
+		addToEWOList();
 //if static torque just add item to static torque part
-
-// if VAA add to new list VAA
-
 // add to EWO Cost, Approval List and Administrator List
 
+		$.when(DeferredList.EwoListDeferred).done(function(){ //works or not?
+			DisplayModalDone();
+		}).fail(function(){
+			DisplayModalFail("I can't update item", true);
+		});
 
-	$.when(EWODeferred).done(function(){ //works or not?
-		DisplayModalDone();
-	}).fail(function(){
-		DisplayModalFail("I can't update item", true);
-	});
+	}
+	catch(error){
+		DisplayModalFail(error, true);
+	}
 }
 
 
@@ -92,32 +101,53 @@ function addToEWOList() {
 		oListItem.set_item('EWONo', compilane.EWONo);
 		oListItem.set_item('Title', compilane.Title);
 		oListItem.set_item('Initiator', compilane.DRE);
-		oListItem.set_item('Platform', compilane.Platform);
+		oListItem.set_item('Workbook', compilane.Workbook);
 		oListItem.set_item('MY', compilane.MY);
+		oListItem.set_item('Platform', compilane.Platform);
 		oListItem.set_item('PADNo', compilane.PADNo);
-		oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response) //?
-		oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO); //
-		oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC); //
-		
-		oListItem.set_item('VAA_x0020_type', compilane.VAAType); //
-			if (compilane.AttachmentLink !== null) oListItem.set_item('AttachmentLink', compilane.AttachmentLink); //
+		oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO);
+		oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC);
+		oListItem.set_item('AttachmentLink', compilane.AttachmentLink);
+			if (compilane.Response !== null) oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response) //?
+			if (compilane.VAAType !== null) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
 			if (compilane.ReasonCode !== null) oListItem.set_item('ReasonCode', compilane.ReasonCode);
 			if (compilane.VAAType !== null || compilane.VAAType.length !== 0) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
-		
 	oListItem.update();
 	clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceededaddToEWOList), Function.createDelegate(this, this.onQueryFailedaddToEWOList));
 }
-
 function onQuerySucceededaddToEWOList() {
-	EWODeferred.resolve();
+	DeferredList.EwoListDeferred.resolve();
 }
-
 function onQueryFailedaddToEWOList(sender, args) {
 	console.log('addToEWOList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
-	EWODeferred.reject();
+	DeferredList.EwoListDeferred.reject();
 }
 
+function addToVAAList(){ //set tite, number, my, platform, platform, sub-tyoe, attachment
+	var clientContext = new SP.ClientContext.get_current();	
+	var oList = clientContext.get_web().get_lists().getByTitle('EWO%20Static%20Torque');
 
+	var itemCreateInfo = new SP.ListItemCreationInformation();
+	this.oListItem = oList.addItem(itemCreateInfo);
+		oListItem.set_item('Title', compilane.Title);
+		oListItem.set_item('Number', compilane.EWONo);
+		oListItem.set_item('Model_x0020_Year', compilane.MY);
+		oListItem.set_item('Platform', compilane.Platform);
+		oListItem.set_item('Workbook', compilane.Workbook);
+		oListItem.set_item('Sub_x002d_Type', compilane.SubType);
+		oListItem.set_item('AttachmentLink', compilane.AttachmentLink);
+	oListItem.update();
+	clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceededaddToVAAList), Function.createDelegate(this, this.onQueryFailedaddToVAAList));
+}
+function onQuerySucceededaddToVAAList() {
+	DeferredList.VAAListDeferred.resolve();
+}
+
+function onQueryFailedaddToVAAList(sender, args) {
+	console.log('addToVAAList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
+	DeferredList.VAAListDeferred.reject();
+}
+	
 // UNDER CONSTRUCTION
 //********************
 //*******************
