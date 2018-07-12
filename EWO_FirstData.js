@@ -260,6 +260,7 @@ function checkEWO(listName, EWONo) {
 //************************************************************************
 
 function clonePadSection(counter){
+	alert();
 	var tempInitializePeoplePicker = ['peoplePickerMePlaner' + counter, 'peoplePickerMPDProcessor' + counter, 'peoplePickerMeGL' + counter];
 	var template = null;
 
@@ -366,13 +367,12 @@ function secondValidation(){
 		$(".summaryInfo").show();
 		$(".createBtn").show();
 
-		displaySummaryPeople(); //displaySummaryPeople
-		//displaySummaryMails(); //displaySummaryPeople
+		displaySummary();
 		createMailToVAA();
 	}
 }
 
-function displaySummaryPeople(){
+function displaySummary(){
 	var PlatformCoordinators = {'Id': '', 'Email': [], 'ID': []}; 
 	peoplePickermailVAACoordinators();
 

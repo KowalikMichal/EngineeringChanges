@@ -49,11 +49,20 @@ function addItemsToSharePoint(){
 	if($('.VAA-info').is(':visible')) CompilaneVAA()
 
 	DisplayModalWorking();
-	//set all items
+	//set required
 
 	compilane.EWONo = $('#numberEWO').val();
 	compilane.Title = $('#titleEWO').val();
 	compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
+	compilane.DRE = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys().split(';');
+	compilane.Platform = $('.workbook').find(':selected').val();
+	compilane.Platform	$('.modelYear').val();
+	compilane.MY = $('.platform').val();
+	compilane.PADNo = $('.numberPAD').val();
+
+	compilane.Platfor = 
+
+	//set additional
 	compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
 
 
@@ -83,13 +92,13 @@ function addToEWOList() {
 		oListItem.set_item('EWONo', compilane.EWONo);
 		oListItem.set_item('Title', compilane.Title);
 		oListItem.set_item('Initiator', compilane.DRE);
-		oListItem.set_item('Platform', compilane.Platform); ///
-		oListItem.set_item('VPPS_x0027_s', compilane.VPPS); //VPPS's what
-		oListItem.set_item('PADNo', compilane.PADNo); //
-		oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response) //
+		oListItem.set_item('Platform', compilane.Platform);
+		oListItem.set_item('MY', compilane.MY);
+		oListItem.set_item('PADNo', compilane.PADNo);
+		oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response) //?
 		oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO); //
 		oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC); //
-		oListItem.set_item('MY', compilane.MY); //
+		
 		oListItem.set_item('VAA_x0020_type', compilane.VAAType); //
 			if (compilane.AttachmentLink !== null) oListItem.set_item('AttachmentLink', compilane.AttachmentLink); //
 			if (compilane.ReasonCode !== null) oListItem.set_item('ReasonCode', compilane.ReasonCode);
