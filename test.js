@@ -145,3 +145,41 @@ function onFail(sender, args) {
 }
 
 getUserInfo();
+
+
+function addToEWOList(EwoListDeferred) {
+	var clientContext = new SP.ClientContext.get_current();	
+	var oList = clientContext.get_web().get_lists().getByTitle('EWOList');
+
+	var itemCreateInfo = new SP.ListItemCreationInformation();
+	this.oListItem = oList.addItem(itemCreateInfo);
+		oListItem.set_item('EWONo', compilane.EWONo);
+		oListItem.set_item('Title', compilane.Title);
+		oListItem.set_item('Initiator', compilane.DRE);
+	oListItem.update();
+
+	clientContext.executeQueryAsync(
+		Function.createDelegate(this, function(){
+			return EwoListDeferred.resolve();
+		}),
+		Function.createDelegate(this, function(sender, args){
+			console.log('addToEWOList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
+			return EwoListDeferred.reject();
+		})
+	);
+}
+
+function main(){
+	var DeferredList = {'EwoListDeferred': new $.Deferred()};
+
+	addToEWOList(DeferredList.EwoListDeferred);
+
+	$.when(DeferredList.EwoListDeferred).done(function(){
+		console.log('ok');
+	}).fail(function(){
+		console.log('nok');
+	})
+
+}
+
+main();

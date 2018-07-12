@@ -45,9 +45,8 @@ function DisplayModalFail(error, reload){
 	$('#ModalInfo').modal({backdrop: "static"})
 }
 
-var DeferredList = {'EwoListDeferred': new $.Deferred(), 'VAAListDeferred': new $.Deferred()}
-
 function addItemsToSharePoint(){
+	var DeferredList = {'EwoListDeferred': new $.Deferred(), 'VAAListDeferred': new $.Deferred()}
 	DisplayModalWorking();
 	try{
 		//set main
@@ -68,31 +67,27 @@ function addItemsToSharePoint(){
 			if($('.VAA-info').is(':visible')){
 				compilane.SubType = 'Static/Controller Torque';
 				$('.VAA-info input:checked').each(function(index,element){return element.value;});
-				addToVAAList();
+				addToVAAList(DeferredList.VAAListDeferred);
 			}
 			else{
 				DeferredList.VAAListDeferred.resolve();
 			}
 
-		addToEWOList();
-//if static torque just add item to static torque part
+		addToEWOList(DeferredList.EwoListDeferred);
 // add to EWO Cost, Approval List and Administrator List
 
-		$.when(DeferredList.EwoListDeferred).done(function(){ //works or not?
+		$.when(DeferredList.EwoListDeferred, DeferredList.VAAListDeferred).done(function(){
 			DisplayModalDone();
 		}).fail(function(){
 			DisplayModalFail("I can't update item", true);
 		});
-
 	}
 	catch(error){
 		DisplayModalFail(error, true);
 	}
 }
 
-
-
-function addToEWOList() {
+function addToEWOList(EwoListDeferred) {
 	var clientContext = new SP.ClientContext.get_current();	
 	var oList = clientContext.get_web().get_lists().getByTitle('EWOList');
 
@@ -113,17 +108,19 @@ function addToEWOList() {
 			if (compilane.ReasonCode !== null) oListItem.set_item('ReasonCode', compilane.ReasonCode);
 			if (compilane.VAAType !== null || compilane.VAAType.length !== 0) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
 	oListItem.update();
-	clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceededaddToEWOList), Function.createDelegate(this, this.onQueryFailedaddToEWOList));
-}
-function onQuerySucceededaddToEWOList() {
-	DeferredList.EwoListDeferred.resolve();
-}
-function onQueryFailedaddToEWOList(sender, args) {
-	console.log('addToEWOList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
-	DeferredList.EwoListDeferred.reject();
+
+	clientContext.executeQueryAsync(
+		Function.createDelegate(this, function(){
+			return EwoListDeferred.resolve();
+		}),
+		Function.createDelegate(this, function(sender, args){
+			console.log('addToEWOList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
+			return EwoListDeferred.reject();
+		})
+	);
 }
 
-function addToVAAList(){ //set tite, number, my, platform, platform, sub-tyoe, attachment
+function addToVAAList(VAAListDeferred){
 	var clientContext = new SP.ClientContext.get_current();	
 	var oList = clientContext.get_web().get_lists().getByTitle('EWO%20Static%20Torque');
 
@@ -137,17 +134,18 @@ function addToVAAList(){ //set tite, number, my, platform, platform, sub-tyoe, a
 		oListItem.set_item('Sub_x002d_Type', compilane.SubType);
 		oListItem.set_item('AttachmentLink', compilane.AttachmentLink);
 	oListItem.update();
-	clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceededaddToVAAList), Function.createDelegate(this, this.onQueryFailedaddToVAAList));
-}
-function onQuerySucceededaddToVAAList() {
-	DeferredList.VAAListDeferred.resolve();
+
+	clientContext.executeQueryAsync(
+		Function.createDelegate(this, function(){
+			return VAAListDeferred.resolve();
+		}),
+		Function.createDelegate(this, function(sender, args){
+			console.log('addToEWOList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
+			return VAAListDeferred.reject();
+		})
+	);
 }
 
-function onQueryFailedaddToVAAList(sender, args) {
-	console.log('addToVAAList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
-	DeferredList.VAAListDeferred.reject();
-}
-	
 // UNDER CONSTRUCTION
 //********************
 //*******************
