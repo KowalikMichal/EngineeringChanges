@@ -18,9 +18,11 @@ function CheckPlaform(listName, Platform) {
 		});
 }
 GetUserKey('1197');
+
 function GetUserKey(ID){
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
-	var oDataUrl = siteUrl + "/_api/web/getuserbyid("+ID+")";
+  var oDataUrl = siteUrl + "/_api/web/getuserbyid("+ID+")";
+	var oDataUrl = _spPageContextInfo.siteAbsoluteUrl;   + "/_api/web/getuserbyid("+ID+")";
 
 	$.ajax({
 		url: oDataUrl,
@@ -183,3 +185,125 @@ function main(){
 }
 
 main();
+
+
+function getUserId(loginName) {
+  var getIdDeferred = new $.Deferred();
+
+    var context = new SP.ClientContext.get_current();
+    this.user = context.get_web().ensureUser(loginName);
+    context.load(this.user);
+
+    context.executeQueryAsync(
+         Function.createDelegate(null, function(){
+          Deferred.resolve(this.user.get_id());
+         }), 
+         Function.createDelegate(null, function(sender, args){
+          return null;
+          alert('Query failed. Error: ' + args.get_message());
+         })
+    );
+}
+
+var id = $.when(getUserId(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys())).done(function(ID){console.log('done' + ID)});
+
+console.log('dupa');
+console.log(id);
+
+
+$.when(getUserId('i:0#.w|eur\\nzby07')).done(function(dupa){
+  console.log(dupa)
+})
+
+
+
+
+function getUserKey(LoginName){
+  var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
+  var oDataUrl = siteUrl+ "/_api/web/siteusers?$select=Id&$filter=LoginName eq '"+LoginName.replace('#', '%23')+"'";
+  console.log(oDataUrl);
+
+  return $.ajax({
+    url: oDataUrl,
+    type: "GET",
+    dataType: "json",
+    async: false
+    }).done( function(data){
+      return data.Id;
+    }).fail(function(errMessage){
+      console.log(errMessage);
+      return null;
+    });
+
+}
+
+//  var zmienna = $.when(user(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys())).done(function(returnData){
+//    console.log(returnData.value[0].Id)
+//    return returnData.value[0].Id;
+//  }).fail(function(){
+//    return;
+//  });
+
+// console.log('dupa');
+// console.log(zmienna)
+
+
+function addItemsToSharePoint(){
+  var DeferredList = {'EwoListDeferred': new $.Deferred(), 'VAAListDeferred': new $.Deferred()}
+  DisplayModalWorking();
+  try{
+    compilane.DRE =[];
+    compilane.TO =[];
+    compilane.CC =[];
+
+    //set main
+    compilane.EWONo = $('#numberEWO').val();
+    compilane.Title = $('#titleEWO').val();
+    compilane.Workbook = $('.workbook').find(':selected').val();
+    compilane.MY = $('.modelYear').val();
+    compilane.Platform = $('.platform').val();
+    compilane.PADNo = $('.numberPAD').val();
+
+    $.each(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys().split(';'), function(index, login){
+      $.when(getUserKey(login)).done(function(returnData){
+        compilane.DRE.push(returnData.value[0].Id)
+      });
+    });
+
+    $.each(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].GetAllUserKeys().split(';'), function(index, login){
+      $.when(getUserKey(login)).done(function(returnData){
+        compilane.TO.push(returnData.value[0].Id)
+      });
+    });
+
+    $.each($.merge(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].GetAllUserKeys().split(';'), SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].GetAllUserKeys().split(';')), function(index, login){
+      $.when(getUserKey(login)).done(function(returnData){
+        compilane.CC.push(returnData.value[0].Id)
+      });
+    }); 
+      //set additional
+      compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
+      compilane.AttachmentLink = ($('.attachments').val() == '') ? 'No Attachments available': $('.attachments').val();
+      //VAA
+      if($('.VAA-info').is(':visible')){
+        compilane.SubType = 'Static/Controller Torque';
+        $('.VAA-info input:checked').each(function(index,element){return element.value;});
+        addToVAAList(DeferredList.VAAListDeferred);
+      }
+      else{
+        DeferredList.VAAListDeferred.resolve();
+      }
+
+    addToEWOList(DeferredList.EwoListDeferred);
+// add to EWO Cost, Approval List and Administrator List
+
+    $.when(DeferredList.EwoListDeferred, DeferredList.VAAListDeferred).done(function(){
+      DisplayModalDone();
+    }).fail(function(){
+      DisplayModalFail("I can't update item", false);
+    });
+  }
+  catch(error){
+    DisplayModalFail(error, true);
+  }
+}

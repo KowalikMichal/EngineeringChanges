@@ -28,7 +28,7 @@ function CheckPeopleField(peoplePicker_TopSpan_HiddenInput){
 function CheckPlaform(Platform) {
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
 	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PlatformCoordinators')/items?$&expand=PlatformCoordinators&$filter=(Platform eq'"+ Platform +"')";
-	
+	console.log(oDataUrl);
 	return $.ajax({
 		url: oDataUrl,
 		async: false,
@@ -43,14 +43,34 @@ function CheckPlaform(Platform) {
 }
 
 function peoplePickermailVAACoordinators(){
-	var mails = [];
+	var LoginName = [];
 	$('#peoplePickermailVAACoordinators').parent().parent().removeAttr('hidden');
 	
-	if($(".frontAxle").is(":checked")) mails.push("sebastian.maier@opel.com");
-	if($(".rearAxle").is(":checked")) mails.push("franz.sabo@opel.com");
-	if($(".plantVAA").is(":checked")) mails.push("jacek.pedrycz@opel.com");
+	if($(".frontAxle").is(":checked")) LoginName.push("i:0#.w|eur\\czts15");
+	if($(".rearAxle").is(":checked")) LoginName.push("i:0#.w|eur\\hzndtp");
+	if($(".plantVAA").is(":checked")) LoginName.push("i:0#.w|ad\\fzncjc");
 
-	for (var index in mails){
-		SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys(mails[index]);
+	for (var index in LoginName){
+		SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys(LoginName[index]);
 	}
+}
+
+function getUserKey(LoginName){
+	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
+	var oDataUrl = siteUrl+ "/_api/web/siteusers?$select=Id&$filter=LoginName eq '"+LoginName.replace('#', '%23')+"'";
+
+	console.log(oDataUrl);
+	return $.ajax({
+				url: oDataUrl,
+				type: "GET",
+				dataType: "json",
+				async: false
+			}).done( function(data){
+				console.log('done');
+				return data.Id;
+			}).fail(function(errMessage){
+				console.log('fail');
+				return null;
+			});
+
 }

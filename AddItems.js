@@ -1,10 +1,3 @@
-// var EWODeferred = new $.Deferred();
-
-// var VAADeferred = new $.Deferred();
-// var ApprovalDeferred = new $.Deferred();
-// var AdministratorDeferred = new $.Deferred();
-
-
 function DisplayModalWorking(){
 	$('#ModalInfo').find('.icon-box').html(' ');
 
@@ -45,21 +38,41 @@ function DisplayModalFail(error, reload){
 	$('#ModalInfo').modal({backdrop: "static"})
 }
 
+function getItemTypeForListName(name) {
+	return "SP.Data." + name.charAt(0).toUpperCase() + name.split(" ").join("").slice(1) + "ListItem";
+}
+
 function addItemsToSharePoint(){
 	var DeferredList = {'EwoListDeferred': new $.Deferred(), 'VAAListDeferred': new $.Deferred()}
 	DisplayModalWorking();
-	try{
+	// try{
+		compilane.DRE =[];
+		compilane.TO =[];
+		compilane.CC =[];
+
 		//set main
 		compilane.EWONo = $('#numberEWO').val();
 		compilane.Title = $('#titleEWO').val();
-		compilane.DRE = SetPeopleField('peoplePickerDRE_TopSpan');
-		compilane.DRE = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys().split(';');
 		compilane.Workbook = $('.workbook').find(':selected').val();
-		compilane.MY = ('.modelYear').val();
+		compilane.MY = $('.modelYear').val();
 		compilane.Platform = $('.platform').val();
 		compilane.PADNo = $('.numberPAD').val();
-		compilane.TO = SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].GetAllUserKeys().split(';');
-		compilane.CC = $.merge(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].GetAllUserKeys().split(';'), SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].GetAllUserKeys().split(';'))
+
+		$.when(getUserKey(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys())).done(function(returnData){
+			compilane.DRE = returnData.value[0].Id;
+		});
+
+		$.each(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].GetAllUserKeys().split(';'), function(index, login){
+			$.when(getUserKey(login)).done(function(returnData){
+				compilane.TO.push(returnData.value[0].Id);
+			});
+		});
+
+		$.each($.merge(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].GetAllUserKeys().split(';'), SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].GetAllUserKeys().split(';')), function(index, login){
+			$.when(getUserKey(login)).done(function(returnData){
+				compilane.CC.push(returnData.value[0].Id);
+			});
+		});	
 			//set additional
 			compilane.ReasonCode = ($('.RC option:selected').val() == '') ? null: $('.RC option:selected').val();
 			compilane.AttachmentLink = ($('.attachments').val() == '') ? 'No Attachments available': $('.attachments').val();
@@ -73,51 +86,57 @@ function addItemsToSharePoint(){
 				DeferredList.VAAListDeferred.resolve();
 			}
 
-		addToEWOList(DeferredList.EwoListDeferred);
+		addToEWOList('EWOList', DeferredList.EwoListDeferred);
 // add to EWO Cost, Approval List and Administrator List
 
 		$.when(DeferredList.EwoListDeferred, DeferredList.VAAListDeferred).done(function(){
 			DisplayModalDone();
 		}).fail(function(){
-			DisplayModalFail("I can't update item", true);
+			DisplayModalFail("I can't update item", false);
 		});
-	}
-	catch(error){
-		DisplayModalFail(error, true);
-	}
+	// }
+	// catch(error){
+	// 	DisplayModalFail('Catch error: '+error, false);
+	// }
 }
 
-function addToEWOList(EwoListDeferred) {
-	var clientContext = new SP.ClientContext.get_current();	
-	var oList = clientContext.get_web().get_lists().getByTitle('EWOList');
+function addToEWOList(listName, EwoListDeferred) {
+	var itemType = getItemTypeForListName(listName);
+	var siteUrl = _spPageContextInfo.webAbsoluteUrl;
+	// var itemProperties = {'Title': compilane.Title, 'InitiatorId': 1273, 'E_x002d_Mail_x0020_CCId': {'results':[1273, 163]}};
+	var itemProperties = {};
 
-	var itemCreateInfo = new SP.ListItemCreationInformation();
-	this.oListItem = oList.addItem(itemCreateInfo);
-		oListItem.set_item('EWONo', compilane.EWONo);
-		oListItem.set_item('Title', compilane.Title);
-		oListItem.set_item('Initiator', compilane.DRE);
-		oListItem.set_item('Workbook', compilane.Workbook);
-		oListItem.set_item('MY', compilane.MY);
-		oListItem.set_item('Platform', compilane.Platform);
-		oListItem.set_item('PADNo', compilane.PADNo);
-		oListItem.set_item('E_x002d_mail_x0020_Receivers', compilane.TO);
-		oListItem.set_item('E_x002d_Mail_x0020_CC', compilane.CC);
-		oListItem.set_item('AttachmentLink', compilane.AttachmentLink);
-			if (compilane.Response !== null) oListItem.set_item('Response_x0020_needed_x003f_', compilane.Response) //?
-			if (compilane.VAAType !== null) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
-			if (compilane.ReasonCode !== null) oListItem.set_item('ReasonCode', compilane.ReasonCode);
-			if (compilane.VAAType !== null || compilane.VAAType.length !== 0) oListItem.set_item('VAA_x0020_type', compilane.VAAType);
-	oListItem.update();
+	itemProperties['EWONo'] = compilane.EWONo;
+	itemProperties['Title'] = compilane.Title;
+	itemProperties['InitiatorId'] = compilane.DRE;
+	itemProperties['Workbook'] = compilane.Workbook;
+	itemProperties['MY'] = compilane.MY;
+	itemProperties['Platform'] = compilane.Platform;
+	itemProperties['PADNo'] = compilane.PADNo;
+	itemProperties["E_x002d_mail_x0020_ReceiversId"] = {'results':compilane.TO};
+	itemProperties["E_x002d_Mail_x0020_CCId"] = {'results':compilane.CC};
+	itemProperties['AttachmentLink'] = compilane.AttachmentLink;
+		if (compilane.VAAType !== null) itemProperties['VAA_x0020_type'] = compilane.VAAType;
+		if (compilane.ReasonCode !== null) itemProperties['ReasonCode'] = compilane.VAAType;
+	itemProperties["__metadata"] = { "type": itemType };
 
-	clientContext.executeQueryAsync(
-		Function.createDelegate(this, function(){
+	$.ajax({
+		url: siteUrl + "/_api/web/lists/getbytitle('" + listName + "')/items",
+		type: "POST",
+		contentType: "application/json;odata=verbose",
+		data: JSON.stringify(itemProperties),
+		headers: {
+			"Accept": "application/json;odata=verbose",
+			"X-RequestDigest": $("#__REQUESTDIGEST").val()
+		},
+		success: function () {
 			return EwoListDeferred.resolve();
-		}),
-		Function.createDelegate(this, function(sender, args){
-			console.log('addToEWOList failed: ' + args.get_message() + '\n' + args.get_stackTrace());
+		},
+		error: function (error) {
+			console.log(error);
 			return EwoListDeferred.reject();
-		})
-	);
+		}
+	});
 }
 
 function addToVAAList(VAAListDeferred){
@@ -165,5 +184,3 @@ function createMailToVAA(){
 		wndMail.close();    
 	}
 }
-
-

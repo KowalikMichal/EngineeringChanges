@@ -1,14 +1,3 @@
-// var engineersForEWO={planner:[],processor:[],gl:[],list:""};
-//used for final engineers matching
-// var mailReceivers={mail:[]}; //possible to add name
-// var cc={mail:[]};//possible to add name
-
-// var platforms=[]; //actually workbookw
-// var platformCoordinators=[]; //guys for given workbooks
-
-// var plannersAndGL={planner:[],gl:[]};
-
-// var deferred = new $.Deferred(); //delete after optymalization -> used in addToEwo
 var counter = 0;
 var compilane= {};
 
@@ -130,6 +119,10 @@ function readyFunction(){
 		SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[1]].AddUserKeys(PeeopleKey.MPD.join(";"));
 		SPClientPeoplePicker.SPClientPeoplePickerDict[PeoplePikcerWorkbook[2]].AddUserKeys(PeeopleKey.GL.join(";"));
 	});
+
+	$('#create').on('click', function(){
+		addItemsToSharePoint();
+	});
 }
 
 //*************************************************************************
@@ -154,6 +147,7 @@ function validation(){
 
 	if (!CheckPeopleField('peoplePickerDRE_TopSpan')){
 		$('#peoplePickerDRE').parent().parent().addClass('has-error');
+		console.log('peoplePickerDRE missing');
 	}
 
 	$('input[type="text"]').filter('[required]:visible').each(function(index, element){
@@ -316,7 +310,7 @@ function secondValidation(){
 		$(".createBtn").show();
 
 		displaySummary();
-		createMailToVAA();
+		//createMailToVAA();
 	}
 }
 
