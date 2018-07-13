@@ -22,15 +22,13 @@ GetUserKey('1197');
 function GetUserKey(ID){
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
   var oDataUrl = siteUrl + "/_api/web/getuserbyid("+ID+")";
-	var oDataUrl = _spPageContextInfo.siteAbsoluteUrl;   + "/_api/web/getuserbyid("+ID+")";
 
 	$.ajax({
 		url: oDataUrl,
 		type: "GET",
 		dataType: "json",
 		}).done( function(data){
-			console.log(data.LoginName);
-			return data.LoginName;
+			console.log(data);
 		}).fail(function(errMessage){
 			console.log(errMessage);
 		});
@@ -307,3 +305,216 @@ function addItemsToSharePoint(){
     DisplayModalFail(error, true);
   }
 }
+
+    compilane.Title = $('#titleEWO').val();
+            $.each(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys().split(';'), function(index, login){
+            $.when(getUserKey(login)).done(function(returnData){
+                compilane.DRE.push(returnData.value[0].Id)
+            });
+        });
+
+
+     var data = {
+                __metadata: { 'type': 'SP.List' },
+                Title: compilane.Title,
+                Initiator: compilane.DRE
+     };
+
+
+    // $.ajax({
+    //     url: oDataUrl,
+    //     type: 'POST',
+    //     contentType: 'application/json;odata=verbose',
+    //     data: JSON.stringify(data),
+    //     headers: {
+    //         'Accept': 'application/json;odata=verbose',
+    //         'X-RequestDigest': $('#__REQUESTDIGEST').val()
+    //     },
+    //     success: function (data) {
+    //         console.log('ok'+ data);
+    //     },
+    //     error: function (s,a,errMsg) {
+    //         console.log(errMsg);
+    //     }
+    // });
+
+
+
+    $.ajax({
+        url: oDataUrl,
+        type: "POST",
+        data: JSON.stringify(data),
+        headers: { 
+            "X-HTTP-Method":"MERGE",
+            "accept": "application/json;odata=verbose",
+            "content-type": "application/json;odata=verbose",
+            "X-RequestDigest": $("#__REQUESTDIGEST").val(),
+            "IF-MATCH": "*"
+        },
+        success: function(){
+            console.log('ok')
+        },
+        error: function(s,a,errMsg){
+            console.log(errMsg);
+        }
+});
+
+
+function createListItem(listName, itemProperties, success, failure) {
+    var siteUrl = _spPageContextInfo.siteAbsoluteUrl;
+    var url = siteUrl + "/_api/web/lists/getbytitle('" + listName + "')/items";
+
+    var itemType = getItemTypeForListName(listName);
+    itemProperties["__metadata"] = { "type": itemType };
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        contentType: "application/json;odata=verbose",
+        data: JSON.stringify(itemProperties),
+        headers: {
+            "Accept": "application/json;odata=verbose",
+            "X-RequestDigest": $("#__REQUESTDIGEST").val()
+        },
+        success: function (data) {
+            success(data.d);
+        },
+        error: function (data) {
+            failure(data);
+        }
+    });
+}
+
+
+// Get List Item Type metadata
+function getItemTypeForListName(name) {
+    return "SP.Data." + name.charAt(0).toUpperCase() + name.split(" ").join("").slice(1) + "ListItem";
+}
+
+//specify item properties
+var itemProperties = {'Title':'Rest'};
+//create item
+createListItem('EWOList',itemProperties,
+   function(entity){
+      console.log('New task ' + entity.Title + ' has been created');
+   },
+   function(error){
+      console.log(JSON.stringify(error));
+   }
+);
+
+
+item = {
+"__metadata": {
+    "type": "SP.Data.ABCListItem"
+},
+"Title": "Name",
+};
+$.ajax({
+url: "https://share.opel.com/sites/MEACEWO/_api/web/lists/getbytitle('EWOList')/items",
+type: "POST",
+contentType: "application/json;odata=verbose",
+data: JSON.stringify(item),
+headers: {
+    "Accept": "application/json;odata=verbose",
+    "X-RequestDigest": $("#__REQUESTDIGEST").val()
+},
+success: function(data) {
+    alert('Success');
+},
+error: function(data) {
+   alert(Error);
+}
+});
+
+
+  $.ajax  
+        ({  
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/GetByTitle('EWOList')/items",  
+        type: "POST",  
+        data: JSON.stringify  
+        ({  
+            __metadata:  
+            {  
+                type: "SP.Data.TestListItem"  
+            },  
+            Title: 'rest',  
+        }),  
+        headers:  
+        {  
+            "Accept": "application/json;odata=verbose",  
+            "Content-Type": "application/json;odata=verbose",  
+            "X-RequestDigest": $("#__REQUESTDIGEST").val(),  
+            "X-HTTP-Method": "POST"  
+        },  
+        success: function(data, status, xhr)  
+        {  
+            alert('Success');  
+        },  
+        error: function(xhr, status, error)  
+        {  
+           alert(Error); 
+        }  
+    });  
+
+
+
+ function add() {
+     var data = {
+                __metadata: { type: 'SP.Data.ProductsListItem' },
+                Title: "title"
+     };
+    $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('EWOList')/items",
+        type: 'POST',
+        contentType: 'application/json;odata=verbose',
+        data: JSON.stringify(data),
+        headers: {
+            'Accept': 'application/json;odata=verbose',
+            'X-RequestDigest': $('#__REQUESTDIGEST').val()
+        },
+        success: function (data) {
+           alert(data)
+        },
+        error: function (s,a,errMsg) {
+           alert(errMsg)
+        }
+    });
+}
+
+
+function createListItem(listName, itemProperties) {
+    var itemType = getItemTypeForListName(listName);
+    var siteUrl = _spPageContextInfo.webAbsoluteUrl;
+    
+    itemProperties["__metadata"] = { "type": itemType };
+
+    $.ajax({
+        url: siteUrl + "/_api/web/lists/getbytitle('" + listName + "')/items",
+        type: "POST",
+        contentType: "application/json;odata=verbose",
+        data: JSON.stringify(itemProperties),
+        headers: {
+            "Accept": "application/json;odata=verbose",
+            "X-RequestDigest": $("#__REQUESTDIGEST").val()
+        },
+        success: function (data) {
+            console.log('ok');
+            console.log(data);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function getItemTypeForListName(name) {
+    return "SP.Data." + name.charAt(0).toUpperCase() + name.split(" ").join("").slice(1) + "ListItem";
+}
+
+var itemProperties = {'Title': compilane.Title, 'InitiatorId': 1273, 'E_x002d_Mail_x0020_CCId': {'results':[1273, 163]}};
+
+createListItem('EWOList',itemProperties);
+
+
+
