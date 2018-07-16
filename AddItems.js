@@ -45,10 +45,10 @@ function getItemTypeForListName(name) {
 function addItemsToSharePoint(){
 	var DeferredList = {'EwoListDeferred': new $.Deferred(), 'VAAListDeferred': new $.Deferred()}
 	DisplayModalWorking();
-	// try{
-		compilane.DRE =[];
+	try{
 		compilane.TO =[];
 		compilane.CC =[];
+		compilane.Planer =[];
 
 		//set main
 		compilane.EWONo = $('#numberEWO').val();
@@ -59,18 +59,18 @@ function addItemsToSharePoint(){
 		compilane.PADNo = $('.numberPAD').val();
 
 		$.when(getUserKey(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickerDRE'+"_TopSpan"].GetAllUserKeys())).done(function(returnData){
-			compilane.DRE = returnData.value[0].Id;
+			compilane.DRE = returnData;
 		});
 
 		$.each(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailReceivers'+"_TopSpan"].GetAllUserKeys().split(';'), function(index, login){
 			$.when(getUserKey(login)).done(function(returnData){
-				compilane.TO.push(returnData.value[0].Id);
+				compilane.TO.push(returnData);
 			});
 		});
 
 		$.each($.merge(SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailMailCopy'+"_TopSpan"].GetAllUserKeys().split(';'), SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailPlatformCoordinators'+"_TopSpan"].GetAllUserKeys().split(';')), function(index, login){
 			$.when(getUserKey(login)).done(function(returnData){
-				compilane.CC.push(returnData.value[0].Id);
+				compilane.CC.push(returnData);
 			});
 		});	
 			//set additional
@@ -94,10 +94,10 @@ function addItemsToSharePoint(){
 		}).fail(function(){
 			DisplayModalFail("I can't update item", false);
 		});
-	// }
-	// catch(error){
-	// 	DisplayModalFail('Catch error: '+error, false);
-	// }
+	}
+	catch(error){
+		DisplayModalFail('Catch error: '+error, false);
+	}
 }
 
 function addToEWOList(listName, EwoListDeferred) {
@@ -163,6 +163,35 @@ function addToVAAList(VAAListDeferred){
 			return VAAListDeferred.reject();
 		})
 	);
+}
+
+function addToEWOCost(EWOCostListDeferred){
+	var itemType = getItemTypeForListName(listName);
+	var siteUrl = _spPageContextInfo.webAbsoluteUrl;
+	var itemProperties = {};
+
+	itemProperties['Title'] = compilane.EWONo;
+	itemProperties['mdpz'] = compilane.EWONo;
+
+	itemProperties["__metadata"] = { "type": itemType };
+
+	$.ajax({
+		url: siteUrl + "/_api/web/lists/getbytitle('" + listName + "')/items",
+		type: "POST",
+		contentType: "application/json;odata=verbose",
+		data: JSON.stringify(itemProperties),
+		headers: {
+			"Accept": "application/json;odata=verbose",
+			"X-RequestDigest": $("#__REQUESTDIGEST").val()
+		},
+		success: function () {
+			return EwoListDeferred.resolve();
+		},
+		error: function (error) {
+			console.log(error);
+			return EwoListDeferred.reject();
+		}
+	});
 }
 
 // UNDER CONSTRUCTION

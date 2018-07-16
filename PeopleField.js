@@ -56,21 +56,59 @@ function peoplePickermailVAACoordinators(){
 }
 
 function getUserKey(LoginName){
+	var returnID = null;
+
+	$.map(JSON.parse(localStorage.getItem('usersData')), function(n){
+		if (n.LoginName.toUpperCase() ==LoginName.toUpperCase()) returnID = n.Id;
+	});
+	return returnID;
+}
+
+function UserlocalStorage(){
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
-	var oDataUrl = siteUrl+ "/_api/web/siteusers?$select=Id&$filter=LoginName eq '"+LoginName.replace('#', '%23')+"'";
+	var oDataUrl = siteUrl+ "/_api/web/siteusers?$select=Id,LoginName";
 
-	console.log(oDataUrl);
-	return $.ajax({
-				url: oDataUrl,
-				type: "GET",
-				dataType: "json",
-				async: false
-			}).done( function(data){
-				console.log('done');
-				return data.Id;
-			}).fail(function(errMessage){
-				console.log('fail');
-				return null;
-			});
+	$.ajax({
+		url: oDataUrl,
+		type: "GET",
+		dataType: "json",
+		async: false
+	}).done( function(data){
+		localStorage.setItem('usersData', JSON.stringify(data.value));
+	}).fail(function(errMessage){
+		alert("Can't find users!");
+	});
+}
 
+function findEngineersFromPAD(PADNo, ColumWorkbook){
+	var personId = [];
+
+	$.map(JSON.parse(localStorage.getItem('PadPlaners')), function(n){
+		if (n["PAD_x0020_NO"] == PADNo){
+			personId.push({'PadNo': n["PAD_x0020_NO"], 'Planer': n[ColumWorkbook], 'GL': n["GLId"], 'MPD': n["MPDId"]});
+		}
+	});
+
+	if (personId == null || personId.length == 0){
+		DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
+		$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
+		$("#validationMessage").show();
+	}
+	return personId;
+}
+
+function PadPlanerslocalStorage(){
+	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
+	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PAD&Planners')/items?&$top=1000";
+
+	$.ajax({
+		url: oDataUrl,
+		type: "GET",
+		dataType: "json",
+		async: false
+	}).done( function(data){
+		localStorage.setItem('PadPlaners', JSON.stringify(data.value));
+	}).fail(function(errMessage){
+		alert("Can't find users in PadPlanerslocalStorage!");
+	});
 }

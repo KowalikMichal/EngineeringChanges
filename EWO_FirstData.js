@@ -36,6 +36,9 @@ function initializePeoplePicker(peoplePickerElementId, AllowMultipleValues, cust
 }
 
 function readyFunction(){
+	if (localStorage.getItem('usersData') == null) UserlocalStorage();
+	if (localStorage.getItem('PadPlaners') == null) PadPlanerslocalStorage();
+
 	$('input[type="text"]').change(function(){
 		this.value = $.trim(this.value);
 	});
@@ -251,35 +254,6 @@ function checkPlatform(book){
 			break;
 	}
 	return infoPlatformMY;
-}
-
-function findEngineersFromPAD(PADNo, ColumWorkbook){
-	var person = [];
-	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
-	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PAD&Planners')/items?$select=PAD_x0020_NO,GLId,MPDId,"+ColumWorkbook+"&$top=1000";
-
-	$.ajax({
-		url: oDataUrl,
-		async: false,
-		type: "GET",
-		dataType: "json",
-		}).done( function(data){
-			data = data.value.filter(function(item){
-				if (item["PAD_x0020_NO"] == PADNo) return true;
-			});
-			if (data == null || data.length == 0){
-				DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
-				$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
-				$("#validationMessage").show();
-			}
-			else {
-				person.push({'PadNo': data[0]["PAD_x0020_NO"], 'Planer': data[0][ColumWorkbook], 'GL': data[0]["GLId"], 'MPD': data[0]["MPDId"]});
-			}
-		}).fail(function(errMessage){
-			console.log(errMessage);
-		});
-
-	return person;
 }
 
 function secondValidation(){
