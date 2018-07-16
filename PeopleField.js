@@ -61,6 +61,26 @@ function getUserKey(LoginName){
 	$.map(JSON.parse(localStorage.getItem('usersData')), function(n){
 		if (n.LoginName.toUpperCase() ==LoginName.toUpperCase()) returnID = n.Id;
 	});
+
+	if (returnID == null){
+		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
+		var oDataUrl = siteUrl+ "/_api/web/siteusers?$select=Id,LoginName&$filter=LoginName eq ('"+LoginName.replace('#', '%23')+"')";
+
+		$.ajax({
+			url: oDataUrl,
+			type: "GET",
+			dataType: "json",
+			async: false
+		}).done( function(data){
+			returnID = data.value[0].Id;
+			var updateLocal = JSON.parse(localStorage.getItem('usersData'));
+			updateLocal.push(data.value[0]);
+			localStorage.setItem('usersData', JSON.stringify(updateLocal));
+		}).fail(function(errMessage){
+			alert("Can't find users!");
+		});
+	}
+
 	return returnID;
 }
 
