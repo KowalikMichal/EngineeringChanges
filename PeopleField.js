@@ -2,7 +2,6 @@ function GetUserKey(ID){
 	var returnUserKey;
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
 	var oDataUrl = siteUrl + "/_api/web/getuserbyid("+ID+")";
-
 	return $.ajax({
 		url: oDataUrl,
 		async: false,
@@ -25,7 +24,8 @@ function CheckPeopleField(peoplePicker_TopSpan_HiddenInput){
 		return false;
 	}
 }
-function CheckPlaform(Platform) {
+
+function CheckPlaform(Platform){
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
 	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PlatformCoordinators')/items?$&expand=PlatformCoordinators&$filter=(Platform eq'"+ Platform +"')";
 	console.log(oDataUrl);
@@ -43,13 +43,11 @@ function CheckPlaform(Platform) {
 }
 
 function peoplePickermailVAACoordinators(){
-	var LoginName = [];
 	$('#peoplePickermailVAACoordinators').parent().parent().removeAttr('hidden');
-	
-	if($(".frontAxle").is(":checked")) LoginName.push("i:0#.w|eur\\czts15");
-	if($(".rearAxle").is(":checked")) LoginName.push("i:0#.w|eur\\hzndtp");
-	if($(".plantVAA").is(":checked")) LoginName.push("i:0#.w|ad\\fzncjc");
-
+	var LoginName = [];
+		if($(".frontAxle").is(":checked")) LoginName.push("i:0#.w|eur\\czts15");
+		if($(".rearAxle").is(":checked")) LoginName.push("i:0#.w|eur\\hzndtp");
+		if($(".plantVAA").is(":checked")) LoginName.push("i:0#.w|ad\\fzncjc");
 	for (var index in LoginName){
 		SPClientPeoplePicker.SPClientPeoplePickerDict['peoplePickermailVAACoordinators'+"_TopSpan"].AddUserKeys(LoginName[index]);
 	}
@@ -57,15 +55,10 @@ function peoplePickermailVAACoordinators(){
 
 function getUserKey(LoginName){
 	var returnID = null;
-
-	$.map(JSON.parse(localStorage.getItem('usersData')), function(n){
-		if (n.LoginName.toUpperCase() ==LoginName.toUpperCase()) returnID = n.Id;
-	});
-
+	$.map(JSON.parse(localStorage.getItem('usersData')), function(n){if (n.LoginName.toUpperCase() ==LoginName.toUpperCase()) returnID = n.Id;});
 	if (returnID == null){
 		var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
 		var oDataUrl = siteUrl+ "/_api/web/siteusers?$select=Id,LoginName&$filter=LoginName eq ('"+LoginName.replace('#', '%23')+"')";
-
 		$.ajax({
 			url: oDataUrl,
 			type: "GET",
@@ -80,14 +73,12 @@ function getUserKey(LoginName){
 			alert("Can't find users!");
 		});
 	}
-
 	return returnID;
 }
 
 function UserlocalStorage(){
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
 	var oDataUrl = siteUrl+ "/_api/web/siteusers?$select=Id,LoginName";
-
 	$.ajax({
 		url: oDataUrl,
 		type: "GET",
@@ -102,25 +93,18 @@ function UserlocalStorage(){
 
 function findEngineersFromPAD(PADNo, ColumWorkbook){
 	var personId = [];
-
-	$.map(JSON.parse(localStorage.getItem('PadPlaners')), function(n){
-		if (n["PAD_x0020_NO"] == PADNo){
-			personId.push({'PadNo': n["PAD_x0020_NO"], 'Planer': n[ColumWorkbook], 'GL': n["GLId"], 'MPD': n["MPDId"]});
+		$.map(JSON.parse(localStorage.getItem('PadPlaners')), function(n){ if (n["PAD_x0020_NO"] == PADNo) personId.push({'PadNo': n["PAD_x0020_NO"], 'Planer': n[ColumWorkbook], 'GL': n["GLId"], 'MPD': n["MPDId"]});});
+		if (personId == null || personId.length == 0){
+			DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
+			$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
+			$("#validationMessage").show();
 		}
-	});
-
-	if (personId == null || personId.length == 0){
-		DisplayModalFail("Please check the number PAD for this workbook - nothing is shown in PAD Planners", false);
-		$( "#validationMessage" ).append( "<p clas='errorInfo'>Refer to <a href='https://share.opel.com/sites/MEACEWO/Lists/PADPlanners/All%20Items.aspx' target='_blank'>PAD Planners on SP</a> to check the issue</p>" );
-		$("#validationMessage").show();
-	}
 	return personId;
 }
 
 function PadPlanerslocalStorage(){
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
 	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PAD&Planners')/items?&$top=1000";
-
 	$.ajax({
 		url: oDataUrl,
 		type: "GET",

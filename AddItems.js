@@ -1,18 +1,16 @@
 function DisplayModalWorking(){
 	$('#ModalInfo').find('.icon-box').html(' ');
-
 	$('#ModalInfo :button').hide()
 	$('#ModalInfo').find('.icon-box').append('<div class="loader"></div>')
-	
 	$('#ModalInfo').find('.modal-header').addClass('Working');
 	$('#ModalInfoBody').html('<h4>Working on it!</h4><p>Please give me a moment...</p>');
 	$('#ModalInfo').modal({backdrop: "static"});
 }
 
 function DisplayModalDone(){
-	$('#ModalInfo :button').show()
+	$('#ModalInfo :button').show();
 	$('#ModalInfo').find('.icon-box').html('<i class="glyphicon glyphicon-ok"></i>');
-	$('#ModalInfo').find('.modal-header').removeClass('Working').addClass('Successful');
+	$('#ModalInfo').find('.modal-header').removeClass('Working Error').addClass('Successful');
 	$('#ModalInfoBody').html('<h4>Great!</h4><p>EWO has been created successfully.</p>');
 		
 	$('#ModalInfo').on('click', function(){
@@ -23,12 +21,13 @@ function DisplayModalDone(){
 }
 
 function DisplayModalFail(error, reload){
+	$('#ModalInfo .close').show();
 	$('.btn-success').hide();
 	$('#ModalInfo').find('.icon-box').html('<i class="glyphicon glyphicon-remove"></i>');
 	$('#ModalInfo').find('.modal-header').removeClass('Working').addClass('Error');
 	$('#ModalInfoBody').html('<h4>Ooops!</h4><p>Something went wrong :(</p><p>'+error+'</p>');
-	
-	if (reload) {
+
+	if (reload){
 		localStorage.removeItem('PadPlaners');
 		localStorage.removeItem('usersData');
 
@@ -41,7 +40,7 @@ function DisplayModalFail(error, reload){
 	$('#ModalInfo').modal({backdrop: "static"})
 }
 
-function getItemTypeForListName(name) {
+function getItemTypeForListName(name){
 	return "SP.Data." + name.charAt(0).toUpperCase() + name.split(" ").join("").slice(1) + "ListItem";
 }
 
@@ -50,13 +49,9 @@ function addItemsToSharePoint(){
 
 	DisplayModalWorking();
 	try{
-		console.trace();
-		compilane.DRE =[];
-		compilane.TO =[];
-		compilane.CC =[];
+		compilane.DRE = [], compilane.TO = [], compilane.CC = [], compilane.PlanerId = [];
 		compilane.PlanerKey = '';
-		compilane.PlanerId =  [];
-
+	
 		//set main
 		compilane.EWONo = $('#numberEWO').val();
 		compilane.Title = $('#titleEWO').val();
@@ -66,9 +61,7 @@ function addItemsToSharePoint(){
 		compilane.PADNo = $('.numberPAD').val();
 
 		$.each(SPClientPeoplePicker.SPClientPeoplePickerDict, function(index, element){
-			if (element.TopLevelElementId.indexOf('MePlaner') > -1){
-				compilane.PlanerKey += element.GetAllUserKeys() + ';';
-			}
+			if (element.TopLevelElementId.indexOf('MePlaner') > -1) compilane.PlanerKey += element.GetAllUserKeys() + ';';
 		});
 
 		$.each(compilane.PlanerKey.split(';').filter(function(element){if(!IsStrNullOrEmpty(element)) return true;}), function(index, login){
@@ -126,7 +119,7 @@ function addItemsToSharePoint(){
 	}
 }
 
-function addToEWOList(listName, EwoListDeferred) {
+function addToEWOList(listName, EwoListDeferred){
 	var itemType = getItemTypeForListName(listName);
 	var siteUrl = _spPageContextInfo.webAbsoluteUrl;
 	var itemProperties = {};
@@ -143,7 +136,6 @@ function addToEWOList(listName, EwoListDeferred) {
 		if (compilane.VAAType !== null) itemProperties['VAA_x0020_type'] = compilane.VAAType;
 		if (compilane.ReasonCode !== null) itemProperties['ReasonCode'] = compilane.VAAType;
 		itemProperties["__metadata"] = { "type": itemType };
-
 	$.ajax({
 		url: siteUrl + "/_api/web/lists/getbytitle('" + listName + "')/items",
 		type: "POST",
@@ -153,10 +145,10 @@ function addToEWOList(listName, EwoListDeferred) {
 			"Accept": "application/json;odata=verbose",
 			"X-RequestDigest": $("#__REQUESTDIGEST").val()
 		},
-		success: function () {
+		success: function (){
 			return EwoListDeferred.resolve();
 		},
-		error: function (error) {
+		error: function (error){
 			console.log(error);
 			return EwoListDeferred.reject();
 		}
@@ -165,8 +157,7 @@ function addToEWOList(listName, EwoListDeferred) {
 
 function addToVAAList(VAAListDeferred){
 	var clientContext = new SP.ClientContext.get_current();	
-	var oList = clientContext.get_web().get_lists().getByTitle('EWO%20Static%20Torque');
-
+	var oList = clientContext.get_web().get_lists().getByTitle('EWO Static Torque');
 	var itemCreateInfo = new SP.ListItemCreationInformation();
 	this.oListItem = oList.addItem(itemCreateInfo);
 		oListItem.set_item('Title', compilane.Title);
@@ -195,48 +186,56 @@ function addToEWOCost(listName, EWOCostListDeferred){
 
 	for (var i=0; i < compilane.PlanerId.length; i++){
 		console.trace();
-		var contactItem = multipeaddToEWOCost(context, listName, compilane.PlanerId[i], JSON.parse(localStorage.getItem('PadPlaners')).map(function(n){if (n['MPDId'] == compilane.PlanerId[i]) return n.GLId;}));
+		var contactItem = multipeaddToEWOCost(context, listName, compilane.PlanerId[i]);
+		console.log('addToEWOCost');
 			itemAdd.push(contactItem);
+			console.log('push');
 	}
 
 	context.executeQueryAsync(
-	function() {
-		console.log(itemAdd.length + ' contacts have been created');
-		return EWOCostListDeferred.resolve();    
-	},
-	function(sender, args) {
-		console.log(args.get_message());
-		EWOCostListDeferred.reject();
-	});
+		function(){
+			console.log(itemAdd.length + ' addToEWOCost have been created');
+			return EWOCostListDeferred.resolve();    
+		},
+		function(sender, args){
+			console.log(args.get_message());
+			EWOCostListDeferred.reject();
+		});
 }
 
-function multipeaddToEWOCost(context, listName, PlnerId, GLId){
+function multipeaddToEWOCost(context, listName, PlanerId){
+	console.log('start multipeaddToEWOCost');
+	var GlId;
+		var arr = JSON.parse(localStorage.getItem('PadPlaners'));
+		for (var index in arr) if(arr[index].AdamId == PlanerId) GlId = arr[index]['GLId'];
 	var web = context.get_web();
 	var list = web.get_lists().getByTitle(listName);
 	var itemCreateInfo = new SP.ListItemCreationInformation();
-	var PlanerField = new SP.FieldUserValue();
-		PlanerField.set_lookupId(PlnerId);
-	var GLField = new SP.FieldUserValue();
-		GLField.set_lookupId(GLId);
+	var PlanerField = new SP.FieldLookupValue();
+		PlanerField.set_lookupId(PlanerId);
+	var GLField = new SP.FieldLookupValue();
+		GLField.set_lookupId(GlId);
 	var listItem = list.addItem(itemCreateInfo);
 		listItem.set_item('Title', compilane.EWONo);
-		listItem.set_item('Planner', PlanerField); //can't set by id
-		listItem.set_item('Group_x0020_Leader', GLField); //can't set by id
+		listItem.set_item('Planner', PlanerField);
+		listItem.set_item('Group_x0020_Leader', GLField);
 	listItem.update();
+	console.log('end multipeaddToEWOCost');
 	return listItem;
 }
 
 function addToEWOApproval(listName, EWOApprovalListDeferred){
 	var clientContext = new SP.ClientContext.get_current();	
 	var oList = clientContext.get_web().get_lists().getByTitle(listName);
-
 	var itemCreateInfo = new SP.ListItemCreationInformation();
+	var PlanerField = new SP.FieldLookupValue();
+		PlanerField.set_lookupId(compilane.PlanerId);
 	this.oListItem = oList.addItem(itemCreateInfo);
 		oListItem.set_item('Title', compilane.Title);
 		oListItem.set_item('ptwm', compilane.EWONo);
 		oListItem.set_item('p5pj', compilane.AttachmentLink);
 		oListItem.set_item('No_x0020_of_x0020_Planers', compilane.PlanerId.length);
-		oListItem.set_item('_x0061_tj7', compilane.PlanerId);
+		oListItem.set_item('_x0061_tj7', PlanerField);
 	oListItem.update();
 
 	clientContext.executeQueryAsync(
