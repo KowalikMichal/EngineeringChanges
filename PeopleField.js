@@ -28,7 +28,6 @@ function CheckPeopleField(peoplePicker_TopSpan_HiddenInput){
 function CheckPlaform(Platform){
 	var siteUrl = _spPageContextInfo.siteAbsoluteUrl;  
 	var oDataUrl = siteUrl + "/_api/web/lists/getbytitle('PlatformCoordinators')/items?$&expand=PlatformCoordinators&$filter=(Platform eq'"+ Platform +"')";
-	console.log(oDataUrl);
 	return $.ajax({
 		url: oDataUrl,
 		async: false,

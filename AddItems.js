@@ -28,9 +28,6 @@ function DisplayModalFail(error, reload){
 	$('#ModalInfoBody').html('<h4>Ooops!</h4><p>Something went wrong :(</p><p>'+error+'</p>');
 
 	if (reload){
-		localStorage.removeItem('PadPlaners');
-		localStorage.removeItem('usersData');
-
 		$('#ModalInfo :button').show();
 		$('#ModalInfo').on('click', function(){
 			location.reload();
@@ -185,11 +182,8 @@ function addToEWOCost(listName, EWOCostListDeferred){
 	var itemAdd= [];
 
 	for (var i=0; i < compilane.PlanerId.length; i++){
-		console.trace();
 		var contactItem = multipeaddToEWOCost(context, listName, compilane.PlanerId[i]);
-		console.log('addToEWOCost');
 			itemAdd.push(contactItem);
-			console.log('push');
 	}
 
 	context.executeQueryAsync(
@@ -204,7 +198,6 @@ function addToEWOCost(listName, EWOCostListDeferred){
 }
 
 function multipeaddToEWOCost(context, listName, PlanerId){
-	console.log('start multipeaddToEWOCost');
 	var GlId;
 		var arr = JSON.parse(localStorage.getItem('PadPlaners'));
 		for (var index in arr) if(arr[index].AdamId == PlanerId) GlId = arr[index]['GLId'];
@@ -220,7 +213,6 @@ function multipeaddToEWOCost(context, listName, PlanerId){
 		listItem.set_item('Planner', PlanerField);
 		listItem.set_item('Group_x0020_Leader', GLField);
 	listItem.update();
-	console.log('end multipeaddToEWOCost');
 	return listItem;
 }
 
