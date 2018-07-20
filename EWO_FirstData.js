@@ -3,6 +3,7 @@ var compilane= {};
 
 $(function(){
 	SP.SOD.executeFunc('sp.js', 'SP.ClientContext',function(){
+	autocomplete();
 	var InitializePeoplePicker = ["peoplePickerDRE","peoplePickerMePlaner","peoplePickerMPDProcessor","peoplePickerMeGL","peoplePickermailReceivers","peoplePickermailMailCopy","peoplePickermailPlatformCoordinators","peoplePickermailVAACoordinators"]	
 	$.when($.each(InitializePeoplePicker, function(index, element){
 		if (element == 'peoplePickerDRE') initializePeoplePicker(element, false)
@@ -113,6 +114,35 @@ function readyFunction(){
 		addItemsToSharePoint();
 	});
 }
+
+var substringMatcher = function(strs) {
+  return function findMatches(q, cb) {
+	var matches, substringRegex;
+	matches = [];
+	substrRegex = new RegExp(q, 'i');
+	$.each(strs, function(i, str) {
+		if (substrRegex.test(str)) matches.push(str);
+	});
+	cb(matches);
+	};
+};
+
+function autocomplete(){
+	var MY =[];
+	for (var i=(new Date()).getFullYear(); i < (new Date()).getFullYear()+4; i+=0.25) MY.push(i)
+
+	$('.modelYear').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  source: substringMatcher(MY)
+	});
+}
+
+
+
 //*************************************************************************
 //********************Fields easy validation ******************************
 //*************************************************************************	
